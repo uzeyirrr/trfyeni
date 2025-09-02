@@ -23,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { QRScanner } from '@/components/delivery/qr-scanner';
 import { 
   Truck, 
   QrCode,
@@ -545,60 +546,12 @@ const totalValue = deliveries.reduce((sum, d) => {
         </Card>
       </div>
 
-      {/* QR Scanner Modal - Basit input ile */}
-      {qrScannerOpen && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl border border-gray-100">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">QR Kod Oku</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setQrScannerOpen(false)}
-              >
-                <XCircle className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="qr-input">Teslimat ID'sini girin:</Label>
-                <Input
-                  id="qr-input"
-                  placeholder="Teslimat ID'si"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleQRScan(e.currentTarget.value);
-                    }
-                  }}
-                  autoFocus
-                />
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button
-                  onClick={() => setQrScannerOpen(false)}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  İptal
-                </Button>
-                <Button
-                  onClick={() => {
-                    const input = document.getElementById('qr-input') as HTMLInputElement;
-                    if (input?.value) {
-                      handleQRScan(input.value);
-                    }
-                  }}
-                  className="flex-1"
-                >
-                  Ara
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            {/* QR Scanner Modal */}
+      <QRScanner
+        isOpen={qrScannerOpen}
+        onClose={() => setQrScannerOpen(false)}
+        onScan={handleQRScan}
+      />
     </DashboardLayout>
   );
 }

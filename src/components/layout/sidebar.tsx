@@ -49,11 +49,11 @@ const menuItems = [
     title: 'Fabrika Teslimatları',
     href: '/dashboard/factory-deliveries',
     icon: Package,
-    role: 'factory'
+
   },
   {
     title: 'Admin Teslimatlar',
-    href: '/dashboard/deliveries2',
+    href: '/dashboard/admin-deliveries',
     icon: Bus,
   },
   {
@@ -65,11 +65,6 @@ const menuItems = [
     title: 'Profil',
     href: '/dashboard/profile',
     icon: User,
-  },
-  {
-    title: 'Teslimatlar',
-    href: '/dashboard/deliveries3',
-    icon: Truck,
   },
   {
     title: 'Ödemeler',

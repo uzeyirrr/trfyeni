@@ -23,6 +23,9 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Detaylı İstatistikler**: Toplam kg, ortalama ve değer hesaplamaları
 - **Teslimat Fişi**: QR kod ile yazdırılabilir/indirilebilir fiş
 - **Yeniden Kullanılabilir Form**: Ayrı bileşen olarak teslimat formu
+- **Admin Teslimat Yönetimi**: Tüm teslimatları görüntüleme, düzenleme ve toplu güncelleme
+- **Bulk Editing**: Çoklu teslimat seçimi ve toplu düzenleme
+- **Gelişmiş Filtreleme**: Arama, durum ve ödeme durumu filtreleri
 
 ### 🏭 Fabrika Yönetimi
 - **Fabrika Teslimatları**: Fabrikalar için özel teslimat sayfası
@@ -31,11 +34,28 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Gelişmiş Filtreleme**: Arama, durum filtresi ve çoklu sıralama
 - **İstatistikler**: Toplam teslimat, kg ve değer hesaplamaları
 
+### 💰 Ödeme Yönetimi
+- **Ödeme Durumu Kontrolü**: Teslimat ödeme durumunu boolean (true/false) olarak yönetme
+- **Switch Kontrolü**: Her teslimat için ödeme durumu toggle butonu
+- **Ödeme Fişi**: Ödeme tamamlandıktan sonra görüntülenebilir fiş
+- **Fiş Yazdırma**: Yazdırılabilir ödeme fişi (HTML formatında)
+- **Fiş İndirme**: İndirilebilir ödeme fişi (TXT formatında)
+- **Güvenlik**: Ödeme tamamlanmadan fiş görüntülenemez
+- **İstatistikler**: Toplam teslimat, kg ve fabrika fiyatı toplamları
+
 ### 🎨 Modern UI/UX
 - **Shadcn UI**: Modern ve tutarlı tasarım
 - **Responsive**: Mobil ve masaüstü uyumlu
 - **Türkçe Arayüz**: Tam Türkçe dil desteği
 - **Kullanıcı Dostu**: Sezgisel navigasyon
+
+### 👥 Kullanıcı Yönetimi (Admin)
+- **Kullanıcı Listesi**: Tüm sistem kullanıcılarını görüntüleme
+- **Arama ve Filtreleme**: İsim, e-posta, telefon ile arama
+- **Rol Bazlı Filtreleme**: Admin, kullanıcı, fabrika rolleri
+- **İstatistik Kartları**: Toplam, doğrulanmış, admin ve fabrika sayıları
+- **Kullanıcı Detayları**: Avatar, rol badge'leri, doğrulama durumu
+- **Hızlı Erişim**: Düzenle ve detay butonları
 
 ## 🛠️ Teknolojiler
 
@@ -46,6 +66,9 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **İkonlar**: Lucide React
 - **Form Yönetimi**: React Hook Form, Zod
 - **Bildirimler**: Sonner
+- **UI Bileşenleri**: Switch, Label, Table, Card, Button, Input, Select
+- **State Yönetimi**: React Hooks (useState, useEffect)
+- **Veri İşleme**: PocketBase SDK, async/await
 
 ## 📦 Kurulum
 
@@ -116,6 +139,13 @@ http://localhost:3000
 src/
 ├── app/                    # Next.js App Router
 │   ├── dashboard/         # Dashboard sayfaları
+│   │   ├── users/        # Kullanıcı yönetimi sayfası
+│   │   ├── deliveries/   # Teslimat yönetimi
+│   │   ├── factory-deliveries/ # Fabrika teslimatları
+│   │   ├── admin-deliveries/   # Admin teslimatları
+│   │   ├── prices/       # Fındık fiyatları
+│   │   ├── payments/     # Ödemeler yönetimi
+│   │   └── profile/      # Kullanıcı profili
 │   ├── login/            # Giriş sayfası
 │   ├── register/         # Kayıt sayfası
 │   └── forgot-password/  # Şifre sıfırlama
@@ -123,7 +153,7 @@ src/
 │   ├── auth/            # Kimlik doğrulama formları
 │   ├── delivery/        # Teslimat bileşenleri
 │   ├── layout/          # Layout bileşenleri
-│   └── ui/              # Shadcn UI bileşenleri
+│   └── ui/              # Shadcn UI bileşenleri (Switch, Label, Table, vb.)
 └── lib/                 # Yardımcı fonksiyonlar
     ├── pocketbase.ts    # PocketBase konfigürasyonu
     └── utils.ts         # Genel yardımcılar
@@ -161,12 +191,43 @@ NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
 ## 📱 Ekran Görüntüleri
 
 - **Dashboard**: Ana kontrol paneli
+- **Kullanıcılar**: Sistem kullanıcıları yönetimi
 - **Fiyatlar**: Grafik ve liste görünümü
 - **Teslimatlar**: Kişisel teslimat yönetimi
 - **Fabrika Teslimatları**: Fabrika teslimat yönetimi
+- **Admin Teslimatlar**: Tüm teslimatları yönetme ve düzenleme
+- **Ödemeler**: Teslimat ödeme durumu yönetimi ve fiş sistemi
 - **Profil**: Kullanıcı profil sayfası
 
 ## 🆕 Son Güncellemeler
+
+### v2.3.0 - Ödeme Yönetimi Sistemi
+- 💰 **Ödemeler Sayfası**: Tamamlanan teslimatların ödeme durumu yönetimi
+- 🔄 **Switch Kontrolü**: Her teslimat için ödeme durumu toggle butonu
+- 📄 **Ödeme Fişi**: Ödeme tamamlandıktan sonra görüntülenebilir fiş
+- 🖨️ **Fiş Yazdırma**: HTML formatında yazdırılabilir ödeme fişi
+- 💾 **Fiş İndirme**: TXT formatında indirilebilir ödeme fişi
+- 🔒 **Güvenlik**: Ödeme tamamlanmadan fiş görüntülenemez
+- 📊 **İstatistikler**: Toplam teslimat, kg ve fabrika fiyatı toplamları
+- 🎯 **Boolean Ödeme Durumu**: True/false ile basit ödeme durumu kontrolü
+
+### v2.2.0 - Admin Teslimat Yönetimi Sistemi
+- 👑 **Admin Teslimatlar Sayfası**: Tüm teslimatları görüntüleme ve yönetme
+- ✏️ **Inline Düzenleme**: Kg, teslimat tarihi, fabrika fiyatı, randıman düzenleme
+- 🔄 **Toplu Güncelleme**: Çoklu teslimat seçimi ve toplu düzenleme
+- 📋 **Checkbox Sistemi**: Teslimat seçimi için gelişmiş checkbox kontrolü
+- 🔍 **Gelişmiş Filtreleme**: Arama, durum ve ödeme durumu filtreleri
+- 📊 **İstatistik Kartları**: Toplam teslimat, kg, değer ve tamamlanan sayıları
+- 🎨 **Modern UI**: Shadcn UI bileşenleri ile tutarlı tasarım
+
+### v2.1.0 - Kullanıcı Yönetimi Sistemi
+- 👥 **Kullanıcılar Sayfası**: Tüm sistem kullanıcılarını görüntüleme
+- 🔍 **Gelişmiş Arama**: İsim, e-posta, telefon ile arama
+- 🏷️ **Rol Badge'leri**: Admin, kullanıcı, fabrika rolleri için görsel etiketler
+- 📊 **İstatistik Kartları**: Toplam, doğrulanmış, admin ve fabrika sayıları
+- ✅ **Doğrulama Durumu**: E-posta doğrulanmış kullanıcı işaretleri
+- 🎨 **Modern UI**: Avatar, responsive tasarım ve kullanıcı dostu arayüz
+- 🔧 **Badge Component**: Shadcn UI uyumlu badge bileşeni
 
 ### v2.0.0 - Fabrika Yönetimi ve Gelişmiş Teslimat Sistemi
 - ✨ **Yeni Teslimat Formu**: Yeniden kullanılabilir bileşen
