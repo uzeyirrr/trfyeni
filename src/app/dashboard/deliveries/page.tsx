@@ -6,13 +6,6 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableBody,
   TableCell,
@@ -20,16 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { DeliveryForm } from '@/components/delivery/delivery-form';
+import { DeliveryReceipt } from '@/components/delivery/delivery-receipt';
 import { toast } from 'sonner';
 import { 
   Truck, 
-  Plus, 
-  X,
+  Plus,
   Calendar,
-  User,
   Building,
   Package,
-  DollarSign
+  DollarSign,
+  Receipt
 } from 'lucide-react';
 
 interface DeliveryData {
@@ -38,30 +32,49 @@ interface DeliveryData {
   user: string;
   factory: string; // Artık fabrika adı olacak
   price: number;
+  delivery_date: string;
   created: string;
   updated: string;
 }
 
-interface FactoryUser {
-  id: string;
-  name: string;
-  city: string;
-  role: string;
-}
+
 
 export default function DeliveriesPage() {
   const [deliveries, setDeliveries] = useState<DeliveryData[]>([]);
-  const [factories, setFactories] = useState<FactoryUser[]>([]);
   const [latestPrice, setLatestPrice] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    kg: '',
-    factory: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryData | null>(null);
 
   const currentUser = getCurrentUser();
+
+  // Profil tamamlama kontrolü
+  const calculateProfileCompletion = () => {
+    if (!currentUser) return 0;
+
+    const fields = [
+      currentUser.name,
+      currentUser.email,
+      currentUser.phone,
+      currentUser.tc,
+      currentUser.city,
+      currentUser.iban,
+      currentUser.avatar
+    ];
+
+    const completedFields = fields.filter(field => {
+      if (!field) return false;
+      if (typeof field === 'string') {
+        return field.trim() !== '';
+      }
+      return true;
+    }).length;
+
+    return Math.round((completedFields / fields.length) * 100);
+  };
+
+  const isProfileComplete = calculateProfileCompletion() === 100;
 
   // Teslimatları çek
   const fetchDeliveries = async () => {
@@ -73,16 +86,17 @@ export default function DeliveriesPage() {
         filter: `user = "${currentUser?.id}"`
       });
       
-      // Expand edilmiş verileri düzgün şekilde işle
-      const processedDeliveries = records.items.map(item => ({
-        id: item.id,
-        kg: item.kg,
-        user: item.user,
-        factory: item.expand?.factory?.name || item.factory || 'Belirtilmemiş',
-        price: item.expand?.price?.price || (typeof item.price === 'number' ? item.price : 0),
-        created: item.created,
-        updated: item.updated
-      }));
+             // Expand edilmiş verileri düzgün şekilde işle
+       const processedDeliveries = records.items.map(item => ({
+         id: item.id,
+         kg: item.kg,
+         user: item.user,
+         factory: item.expand?.factory?.name || item.factory || 'Belirtilmemiş',
+         price: item.expand?.price?.price || (typeof item.price === 'number' ? item.price : 0),
+         delivery_date: item.delivery_date || item.created,
+         created: item.created,
+         updated: item.updated
+       }));
       
       setDeliveries(processedDeliveries as DeliveryData[]);
     } catch (error) {
@@ -93,35 +107,7 @@ export default function DeliveriesPage() {
     }
   };
 
-  // Fabrikaları çek
-  const fetchFactories = async () => {
-    try {
-      const records = await pb.collection('users').getList(1, 200, {
-        filter: 'role = "factory"'
-      });
-      
-      const factoryUsers = records.items as unknown as FactoryUser[];
-      
-      // Kullanıcının şehri ile aynı şehirdeki fabrikaları filtrele
-      if (currentUser?.city) {
-        const sameCityFactories = factoryUsers.filter(factory => 
-          factory.city === currentUser.city
-        );
-        
-        if (sameCityFactories.length > 0) {
-          setFactories(sameCityFactories);
-        } else {
-          // Aynı şehirde fabrika yoksa tüm fabrikaları göster
-          setFactories(factoryUsers);
-        }
-      } else {
-        // Kullanıcının şehri yoksa tüm fabrikaları göster
-        setFactories(factoryUsers);
-      }
-    } catch (error) {
-      console.error('Fabrikalar yüklenirken hata:', error);
-    }
-  };
+
 
   // Son fiyatı çek
   const fetchLatestPrice = async () => {
@@ -139,39 +125,18 @@ export default function DeliveriesPage() {
 
   useEffect(() => {
     fetchDeliveries();
-    fetchFactories();
     fetchLatestPrice();
   }, []);
 
-  // Yeni teslimat ekle
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      // Son fiyatı tekrar çek (güncel olması için)
-      const priceRecords = await pb.collection('price').getList(1, 1, {
-        sort: '-created',
-      });
-      const currentPrice = priceRecords.items.length > 0 ? priceRecords.items[0].price : 0;
-      
-      await pb.collection('deliveries').create({
-        kg: parseFloat(formData.kg),
-        user: currentUser?.id,
-        factory: formData.factory,
-        price: currentPrice
-      });
-      
-      toast.success('Teslimat başarıyla eklendi');
-      setFormData({ kg: '', factory: '' });
-      setShowForm(false);
-      fetchDeliveries(); // Listeyi yenile
-    } catch (error) {
-      console.error('Teslimat eklenirken hata:', error);
-      toast.error('Teslimat eklenemedi');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Yeni teslimat ekleme başarılı olduğunda
+  const handleDeliverySuccess = () => {
+    fetchDeliveries(); // Listeyi yenile
+  };
+
+  // Teslimat fişi gösterme
+  const handleShowReceipt = (delivery: DeliveryData) => {
+    setSelectedDelivery(delivery);
+    setShowReceipt(true);
   };
 
   // İstatistikler
@@ -195,14 +160,51 @@ export default function DeliveriesPage() {
               <Truck className="mr-2 h-4 w-4" />
               Yenile
             </Button>
-            <Button onClick={() => setShowForm(true)} size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Yeni Teslimat
-            </Button>
+                         <Button 
+               onClick={() => {
+                 if (!isProfileComplete) {
+                   toast.error('Teslimat oluşturmak için profilinizi tamamlamanız gerekiyor');
+                   return;
+                 }
+                 setShowForm(true);
+               }} 
+               size="sm"
+               disabled={!isProfileComplete}
+               title={!isProfileComplete ? "Teslimat oluşturmak için profilinizi tamamlayın" : ""}
+             >
+               <Plus className="mr-2 h-4 w-4" />
+               Yeni Teslimat
+             </Button>
           </div>
-        </div>
+                 </div>
 
-        {/* İstatistik Kartları */}
+         {/* Profil Tamamlama Uyarısı */}
+         {!isProfileComplete && (
+           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+             <div className="flex items-center">
+               <div className="flex-shrink-0">
+                 <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                 </svg>
+               </div>
+               <div className="ml-3">
+                 <h3 className="text-sm font-medium text-yellow-800">
+                   Profil Tamamlanmamış
+                 </h3>
+                 <div className="mt-2 text-sm text-yellow-700">
+                   <p>
+                     Teslimat oluşturabilmek için profilinizi tamamlamanız gerekiyor. 
+                     <a href="/dashboard/profile" className="font-medium underline hover:text-yellow-600 ml-1">
+                       Profili tamamla
+                     </a>
+                   </p>
+                 </div>
+               </div>
+             </div>
+           </div>
+         )}
+
+         {/* İstatistik Kartları */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -280,25 +282,33 @@ export default function DeliveriesPage() {
               </div>
             ) : deliveries.length > 0 ? (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Kg</TableHead>
-                    <TableHead>Fabrika</TableHead>
-                    <TableHead>Fiyat</TableHead>
-                    <TableHead>Toplam</TableHead>
-                  </TableRow>
-                </TableHeader>
+                                 <TableHeader>
+                   <TableRow>
+                     <TableHead>Oluşturulma</TableHead>
+                     <TableHead>Teslimat Tarihi</TableHead>
+                     <TableHead>Kg</TableHead>
+                     <TableHead>Fabrika</TableHead>
+                     <TableHead>Fiyat</TableHead>
+                     <TableHead>Toplam</TableHead>
+                     <TableHead>İşlemler</TableHead>
+                   </TableRow>
+                 </TableHeader>
                 <TableBody>
                   {deliveries.slice(0, 10).map((delivery) => (
-                    <TableRow key={delivery.id}>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 h-4 w-4 text-gray-500" />
-                          {new Date(delivery.created).toLocaleDateString('tr-TR')}
-                        </div>
-                      </TableCell>
-                                             <TableCell className="font-medium">
+                                         <TableRow key={delivery.id}>
+                       <TableCell>
+                         <div className="flex items-center">
+                           <Calendar className="mr-2 h-4 w-4 text-gray-500" />
+                           {new Date(delivery.created).toLocaleDateString('tr-TR')}
+                         </div>
+                       </TableCell>
+                       <TableCell>
+                         <div className="flex items-center">
+                           <Calendar className="mr-2 h-4 w-4 text-blue-500" />
+                           {delivery.delivery_date ? new Date(delivery.delivery_date).toLocaleDateString('tr-TR') : new Date(delivery.created).toLocaleDateString('tr-TR')}
+                         </div>
+                       </TableCell>
+                       <TableCell className="font-medium">
                          {(parseFloat(delivery.kg?.toString() || '0') || 0).toLocaleString()} kg
                        </TableCell>
                                                <TableCell>
@@ -313,6 +323,17 @@ export default function DeliveriesPage() {
                        <TableCell className="font-bold">
                          ₺{((parseFloat(delivery.kg?.toString() || '0') || 0) * (delivery.price || 0)).toLocaleString()}
                        </TableCell>
+                       <TableCell>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleShowReceipt(delivery)}
+                           className="flex items-center space-x-1"
+                         >
+                           <Receipt className="h-4 w-4" />
+                           <span>Fiş</span>
+                         </Button>
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -326,88 +347,23 @@ export default function DeliveriesPage() {
         </Card>
       </div>
 
-      {/* Yeni Teslimat Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Yeni Teslimat Ekle</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowForm(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Kg
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={formData.kg}
-                  onChange={(e) => setFormData({...formData, kg: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Fabrika
-                </label>
-                <Select
-                  value={formData.factory}
-                  onValueChange={(value) => setFormData({...formData, factory: value})}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Fabrika seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {factories.map((factory) => (
-                      <SelectItem key={factory.id} value={factory.id}>
-                        {factory.name} - {factory.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Yeni Teslimat Form Component */}
+      <DeliveryForm 
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        onSuccess={handleDeliverySuccess}
+      />
 
-              <div className="bg-gray-50 p-3 rounded-md">
-                                 <p className="text-sm text-gray-600">
-                   <strong>Son Fiyat:</strong> ₺{(latestPrice || 0).toLocaleString()}
-                 </p>
-                 <p className="text-sm text-gray-600">
-                   <strong>Tahmini Toplam:</strong> ₺{formData.kg ? (parseFloat(formData.kg) * (latestPrice || 0)).toLocaleString() : '0'}
-                 </p>
-              </div>
-              
-              <div className="flex space-x-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1"
-                >
-                  İptal
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? 'Ekleniyor...' : 'Ekle'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Teslimat Fişi Component */}
+      {selectedDelivery && (
+        <DeliveryReceipt
+          delivery={selectedDelivery}
+          isOpen={showReceipt}
+          onClose={() => {
+            setShowReceipt(false);
+            setSelectedDelivery(null);
+          }}
+        />
       )}
     </DashboardLayout>
   );

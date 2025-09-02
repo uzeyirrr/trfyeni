@@ -46,6 +46,12 @@ const menuItems = [
     icon: Truck,
   },
   {
+    title: 'Fabrika Teslimatları',
+    href: '/dashboard/factory-deliveries',
+    icon: Package,
+    role: 'factory'
+  },
+  {
     title: 'Admin Teslimatlar',
     href: '/dashboard/deliveries2',
     icon: Bus,
@@ -182,6 +188,12 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
+          
+          // Role kontrolü
+          if (item.role && user?.role !== item.role) {
+            return null;
+          }
+          
           return (
             <Link
               key={item.href}

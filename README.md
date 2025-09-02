@@ -21,6 +21,15 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Fabrika Seçimi**: Şehir bazlı fabrika filtreleme
 - **Otomatik Fiyat**: Güncel fiyatla otomatik hesaplama
 - **Detaylı İstatistikler**: Toplam kg, ortalama ve değer hesaplamaları
+- **Teslimat Fişi**: QR kod ile yazdırılabilir/indirilebilir fiş
+- **Yeniden Kullanılabilir Form**: Ayrı bileşen olarak teslimat formu
+
+### 🏭 Fabrika Yönetimi
+- **Fabrika Teslimatları**: Fabrikalar için özel teslimat sayfası
+- **QR Kod Tarama**: Teslimat ID'si ile hızlı erişim
+- **Teslimat Düzenleme**: Kg, fabrika fiyatı, randıman ve durum güncelleme
+- **Gelişmiş Filtreleme**: Arama, durum filtresi ve çoklu sıralama
+- **İstatistikler**: Toplam teslimat, kg ve değer hesaplamaları
 
 ### 🎨 Modern UI/UX
 - **Shadcn UI**: Modern ve tutarlı tasarım
@@ -93,7 +102,12 @@ http://localhost:3000
 - `user`: Kullanıcı ilişkisi
 - `factory`: Fabrika ilişkisi
 - `price`: Fiyat ilişkisi
+- `delivery_date`: Teslimat tarihi
+- `factory_price`: Fabrika anlaşma fiyatı
+- `tamamlandi`: Teslimat tamamlanma durumu
+- `randiman`: Fındık randıman yüzdesi
 - `created`: Oluşturulma tarihi
+- `updated`: Güncellenme tarihi
 
 ## 🔧 Geliştirme
 
@@ -107,6 +121,7 @@ src/
 │   └── forgot-password/  # Şifre sıfırlama
 ├── components/           # React bileşenleri
 │   ├── auth/            # Kimlik doğrulama formları
+│   ├── delivery/        # Teslimat bileşenleri
 │   ├── layout/          # Layout bileşenleri
 │   └── ui/              # Shadcn UI bileşenleri
 └── lib/                 # Yardımcı fonksiyonlar
@@ -148,7 +163,19 @@ NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
 - **Dashboard**: Ana kontrol paneli
 - **Fiyatlar**: Grafik ve liste görünümü
 - **Teslimatlar**: Kişisel teslimat yönetimi
+- **Fabrika Teslimatları**: Fabrika teslimat yönetimi
 - **Profil**: Kullanıcı profil sayfası
+
+## 🆕 Son Güncellemeler
+
+### v2.0.0 - Fabrika Yönetimi ve Gelişmiş Teslimat Sistemi
+- ✨ **Yeni Teslimat Formu**: Yeniden kullanılabilir bileşen
+- 🏭 **Fabrika Teslimatları Sayfası**: Fabrikalar için özel yönetim
+- 🔍 **QR Kod Sistemi**: Teslimat fişi ve hızlı erişim
+- 📊 **Gelişmiş İstatistikler**: Doğru hesaplama algoritmaları
+- 🔧 **Teslimat Düzenleme**: Kg, fiyat, randıman ve durum güncelleme
+- 📱 **Responsive Tasarım**: Mobil uyumlu arayüz
+- 🎯 **Akıllı Filtreleme**: Arama, durum ve çoklu sıralama
 
 ## 🤝 Katkıda Bulunma
 
