@@ -2,6 +2,9 @@ import PocketBase from 'pocketbase';
 
 export const pb = new PocketBase('https://trfapi.yezuri.com');
 
+// Auto cancellation özelliğini tamamen devre dışı bırak
+pb.autoCancellation(false);
+
 export type AuthModel = {
   id: string;
   email: string;

@@ -7,8 +7,12 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 ### 👤 Kullanıcı Yönetimi
 - **Kayıt ve Giriş**: Güvenli kullanıcı kimlik doğrulama
 - **Profil Yönetimi**: Kişisel bilgi güncelleme ve şehir seçimi
-- **Rol Tabanlı Erişim**: Admin, üretici ve fabrika rolleri
+- **Rol Tabanlı Erişim**: Admin, üretici, fabrika ve şirket rolleri
 - **Profil Tamamlama**: Görsel tamamlanma yüzdesi
+- **Kullanıcı Detay ve Düzenleme**: Tüm kullanıcı verilerini düzenleme
+- **Avatar Yönetimi**: Profil fotoğrafı yükleme ve değiştirme
+- **Dosya Yönetimi**: Kullanıcıya ait dosyaları görüntüleme, yükleme ve kaldırma
+- **Gelişmiş Kullanıcı Listesi**: Arama, filtreleme ve rol bazlı görüntüleme
 
 ### 📊 Fındık Fiyatları
 - **Gerçek Zamanlı Grafik**: Son fiyat trendleri
@@ -33,6 +37,8 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Teslimat Düzenleme**: Kg, fabrika fiyatı, randıman ve durum güncelleme
 - **Gelişmiş Filtreleme**: Arama, durum filtresi ve çoklu sıralama
 - **İstatistikler**: Toplam teslimat, kg ve değer hesaplamaları
+- **Fabrika Dashboard**: Fabrika odaklı istatistikler ve hızlı işlemler
+- **Teslimat Takibi**: Gerçek zamanlı teslimat durumu ve ödeme takibi
 
 ### 💰 Ödeme Yönetimi
 - **Ödeme Durumu Kontrolü**: Teslimat ödeme durumunu boolean (true/false) olarak yönetme
@@ -48,14 +54,29 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Responsive**: Mobil ve masaüstü uyumlu
 - **Türkçe Arayüz**: Tam Türkçe dil desteği
 - **Kullanıcı Dostu**: Sezgisel navigasyon
+- **Gradient Tasarım**: Modern renk geçişleri ve görsel efektler
+- **Toast Bildirimleri**: Kullanıcı dostu bildirim sistemi
+- **Loading Durumları**: Skeleton ve spinner animasyonları
+- **Form Validasyonu**: Zod ile güçlü form doğrulama
+
+### 🏠 Akıllı Ana Sayfa (Dashboard)
+- **Rol Bazlı Görünüm**: Admin, fabrika ve kullanıcı rolleri için özelleştirilmiş
+- **Gerçek Zamanlı İstatistikler**: PocketBase'den canlı veri çekme
+- **Dinamik İstatistik Kartları**: Toplam kullanıcı, teslimat, gelir ve fabrika sayıları
+- **Son Teslimatlar**: Gerçek teslimat verileri ile güncel durum
+- **Son Kullanıcılar**: Sisteme son kayıt olan kullanıcılar (Admin için)
+- **Hızlı İşlemler**: Rol bazlı hızlı erişim butonları
+- **Sistem Durumu**: Platform performans ve güvenlik bilgileri
 
 ### 👥 Kullanıcı Yönetimi (Admin)
 - **Kullanıcı Listesi**: Tüm sistem kullanıcılarını görüntüleme
 - **Arama ve Filtreleme**: İsim, e-posta, telefon ile arama
-- **Rol Bazlı Filtreleme**: Admin, kullanıcı, fabrika rolleri
+- **Rol Bazlı Filtreleme**: Admin, kullanıcı, fabrika, şirket rolleri
 - **İstatistik Kartları**: Toplam, doğrulanmış, admin ve fabrika sayıları
 - **Kullanıcı Detayları**: Avatar, rol badge'leri, doğrulama durumu
 - **Hızlı Erişim**: Düzenle ve detay butonları
+- **Kullanıcı Detay Sayfası**: Tüm kullanıcı verilerini düzenleme
+- **Dosya ve Avatar Yönetimi**: Profil fotoğrafı ve belge yönetimi
 
 ## 🛠️ Teknolojiler
 
@@ -113,8 +134,11 @@ http://localhost:3000
 - `tc`: TC kimlik numarası
 - `city`: Şehir
 - `iban`: IBAN numarası
-- `role`: Kullanıcı rolü (admin, factory, user)
+- `role`: Kullanıcı rolü (admin, factory, user, company)
 - `avatar`: Profil resmi
+- `files`: Kullanıcıya ait dosyalar (çoklu)
+- `username`: Kullanıcı adı
+- `verified`: E-posta doğrulama durumu
 
 ### Price Koleksiyonu
 - `price`: Fiyat değeri
@@ -128,6 +152,7 @@ http://localhost:3000
 - `delivery_date`: Teslimat tarihi
 - `factory_price`: Fabrika anlaşma fiyatı
 - `tamamlandi`: Teslimat tamamlanma durumu
+- `odeme_tamamlandi`: Ödeme tamamlanma durumu
 - `randiman`: Fındık randıman yüzdesi
 - `created`: Oluşturulma tarihi
 - `updated`: Güncellenme tarihi
@@ -190,7 +215,7 @@ NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
 
 ## 📱 Ekran Görüntüleri
 
-- **Dashboard**: Ana kontrol paneli
+- **Dashboard**: Akıllı ana sayfa (rol bazlı görünüm)
 - **Kullanıcılar**: Sistem kullanıcıları yönetimi
 - **Fiyatlar**: Grafik ve liste görünümü
 - **Teslimatlar**: Kişisel teslimat yönetimi
@@ -200,6 +225,25 @@ NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
 - **Profil**: Kullanıcı profil sayfası
 
 ## 🆕 Son Güncellemeler
+
+### v2.5.0 - Kullanıcı Detay ve Düzenleme Sistemi
+- 👤 **Kullanıcı Detay Sayfası**: Tüm kullanıcı verilerini düzenleme
+- 🖼️ **Avatar Yönetimi**: Profil fotoğrafı yükleme ve değiştirme
+- 📁 **Dosya Yönetimi**: Kullanıcıya ait dosyaları görüntüleme, yükleme ve kaldırma
+- ✏️ **Form Düzenleme**: Kişisel bilgiler, rol ve finansal bilgileri düzenleme
+- 🔄 **Gerçek Zamanlı Güncelleme**: Değişiklikleri anında kaydetme
+- 📱 **Responsive Tasarım**: Mobil ve masaüstü için optimize edilmiş arayüz
+- 🎯 **Rol Bazlı Erişim**: Admin, kullanıcı, fabrika ve şirket rolleri desteği
+
+### v2.4.0 - Akıllı Ana Sayfa ve Dashboard Sistemi
+- 🏠 **Akıllı Ana Sayfa**: Rol bazlı özelleştirilmiş dashboard görünümü
+- 📊 **Gerçek Zamanlı İstatistikler**: PocketBase'den canlı veri çekme ve güncelleme
+- 🎨 **Modern Tasarım**: Gradient arka planlar, renkli border'lar ve görsel iyileştirmeler
+- 👑 **Admin Dashboard**: Ek istatistik kartları, son kullanıcılar ve gelişmiş yönetim
+- 🏭 **Fabrika Dashboard**: Fabrika odaklı hızlı işlemler ve teslimat yönetimi
+- 👤 **Kullanıcı Dashboard**: Basit ve kullanıcı dostu arayüz
+- 🔄 **Dinamik Veri**: Son teslimatlar, kullanıcı sayıları ve gelir hesaplamaları
+- 📱 **Responsive Tasarım**: Mobil ve masaüstü için optimize edilmiş görünüm
 
 ### v2.3.0 - Ödeme Yönetimi Sistemi
 - 💰 **Ödemeler Sayfası**: Tamamlanan teslimatların ödeme durumu yönetimi
