@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getCurrentUser, pb } from '@/lib/pocketbase';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +62,7 @@ interface RecentUser {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -79,8 +81,18 @@ export default function DashboardPage() {
   useEffect(() => {
     const currentUser = getCurrentUser();
     setUser(currentUser);
+    
+    // Rol bazlı yönlendirme
+    if (currentUser?.role === 'user') {
+      router.push('/dashboard/user-dashboard');
+      return;
+    } else if (currentUser?.role === 'factory') {
+      router.push('/dashboard/factory-dashboard');
+      return;
+    }
+    
     fetchDashboardData();
-  }, []);
+  }, [router]);
 
   const fetchDashboardData = async () => {
     try {

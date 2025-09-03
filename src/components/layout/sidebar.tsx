@@ -40,61 +40,73 @@ const menuItems = [
     title: 'Ana Sayfa',
     href: '/dashboard',
     icon: Home,
+    roles: ['admin',   'company'], // Tüm roller erişebilir
   },
   {
     title: 'Kullanıcı Dashboard',
     href: '/dashboard/user-dashboard',
     icon: Users,
+    roles: ['admin', 'user'], // Admin ve normal kullanıcılar
   },
   {
     title: 'Fabrika Dashboard',
     href: '/dashboard/factory-dashboard',
     icon: Factory,
+    roles: ['admin', 'factory'], // Admin ve fabrikalar
   },
   {
     title: 'Teslimatlar',
     href: '/dashboard/deliveries',
     icon: Truck,
+    roles: ['admin', 'user', 'company'], // Admin, normal kullanıcılar ve şirketler
   },
   {
     title: 'Fabrika Teslimatları',
     href: '/dashboard/factory-deliveries',
     icon: Package,
+    roles: ['admin', 'factory'], // Admin ve fabrikalar
   },
   {
     title: 'Admin Teslimatlar',
     href: '/dashboard/admin-deliveries',
     icon: Bus,
+    roles: ['admin'], // Sadece adminler
   },
   {
     title: 'Fındık Fiyatları',
     href: '/dashboard/prices',
     icon: TrendingUp,
+    roles: ['admin', 'factory', 'user', 'company'], // Tüm roller erişebilir
   },
   {
     title: 'Ödemeler',
     href: '/dashboard/payments',
     icon: DollarSign,
+    roles: ['admin'], // Admin  
   },
   {
     title: 'Kullanıcılar',
     href: '/dashboard/users',
     icon: Users,
+    roles: ['admin'], // Sadece adminler
   },
   {
     title: 'Profil',
     href: '/dashboard/profile',
     icon: User,
+    roles: ['admin', 'factory', 'user', 'company'], // Tüm roller erişebilir
   },
   {
     title: 'SSS',
     href: 'https://www.trfturkiyefindik.com/faq ',
     icon: HelpCircle,
+    roles: ['admin', 'factory', 'user', 'company'], // Tüm roller erişebilir
   },
   {
     title: 'Destek',
     href: 'tel:+90 533 372 60 93',
     icon: MessageCircle,
+    roles: ['admin', 'factory', 'user', 'company'], // Tüm roller erişebilir
   },
 ];
 
@@ -213,7 +225,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
           const isActive = pathname === item.href;
           
           // Role kontrolü
-          if (item.role && user?.role !== item.role) {
+          if (item.roles && !item.roles.includes(user?.role || '')) {
             return null;
           }
           

@@ -58,9 +58,11 @@ Modern ve kullanıcı dostu fındık yönetim sistemi. Üreticiler, fabrikalar v
 - **Toast Bildirimleri**: Kullanıcı dostu bildirim sistemi
 - **Loading Durumları**: Skeleton ve spinner animasyonları
 - **Form Validasyonu**: Zod ile güçlü form doğrulama
+- **Rol Bazlı Navigasyon**: Kullanıcı rolüne göre dinamik menü görünümü
 
 ### 🏠 Akıllı Ana Sayfa (Dashboard)
 - **Rol Bazlı Görünüm**: Admin, fabrika ve kullanıcı rolleri için özelleştirilmiş
+- **Otomatik Yönlendirme**: Kullanıcı giriş yaptığında rolüne göre otomatik yönlendirme
 - **Gerçek Zamanlı İstatistikler**: PocketBase'den canlı veri çekme
 - **Dinamik İstatistik Kartları**: Toplam kullanıcı, teslimat, gelir ve fabrika sayıları
 - **Son Teslimatlar**: Gerçek teslimat verileri ile güncel durum
@@ -225,6 +227,14 @@ NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
 - **Profil**: Kullanıcı profil sayfası
 
 ## 🆕 Son Güncellemeler
+
+### v2.6.0 - Rol Bazlı Navigasyon ve Otomatik Yönlendirme Sistemi
+- 🎯 **Rol Bazlı Navigasyon**: Kullanıcı rolüne göre dinamik sidebar menü görünümü
+- 🚀 **Otomatik Yönlendirme**: Kullanıcı giriş yaptığında rolüne göre otomatik dashboard yönlendirme
+- 🔒 **Güvenli Erişim**: Her rol sadece kendisine ait sayfalara erişebilir
+- 👤 **Kullanıcı Dashboard**: Normal kullanıcılar için özelleştirilmiş dashboard
+- 🏭 **Fabrika Dashboard**: Fabrika kullanıcıları için özelleştirilmiş dashboard
+- 👑 **Admin Dashboard**: Tüm sayfalara erişim ile tam yönetim paneli
 
 ### v2.5.0 - Kullanıcı Detay ve Düzenleme Sistemi
 - 👤 **Kullanıcı Detay Sayfası**: Tüm kullanıcı verilerini düzenleme
