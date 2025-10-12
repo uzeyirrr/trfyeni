@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { 
   FileText, 
@@ -36,6 +37,7 @@ interface UserData {
   username: string;
   created: string;
   updated: string;
+  factory_verified?: boolean;
 }
 
 export default function UserDetailPage() {
@@ -71,7 +73,8 @@ export default function UserDetailPage() {
         email: record.email || '',
         username: record.username || '',
         created: record.created,
-        updated: record.updated
+        updated: record.updated,
+        factory_verified: record.factory_verified || false
       };
       
       setUser(userData);
@@ -134,7 +137,16 @@ export default function UserDetailPage() {
     
     setIsSaving(true);
     try {
-      const updateData: Partial<UserData> & { avatar?: string; files?: string[] } = { ...formData };
+      // Güncellenebilir alanları seç (read-only alanları çıkar)
+      const updateData: Record<string, string | boolean | string[] | undefined> = {
+        name: formData.name,
+        phone: formData.phone,
+        role: formData.role,
+        tc: formData.tc,
+        city: formData.city,
+        iban: formData.iban,
+        factory_verified: formData.factory_verified
+      };
       
       // Avatar yükle
       if (newAvatar) {
@@ -159,6 +171,8 @@ export default function UserDetailPage() {
       
       toast.success('Kullanıcı güncellendi');
       setIsEditing(false);
+      setNewAvatar(null);
+      setNewFiles([]);
       fetchUser();
     } catch (error) {
       console.error('Güncelleme hatası:', error);
@@ -221,29 +235,45 @@ export default function UserDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex space-x-2">
-            {isEditing ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsEditing(false)}
-                  disabled={isSaving}
-                >
-                  İptal
-                </Button>
-                <Button 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => setIsEditing(true)}>
-                Düzenle
-              </Button>
+          <div className="flex items-center space-x-4">
+            {user.role === 'factory' && (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="factory-verified"
+                  checked={formData.factory_verified || false}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, factory_verified: checked }))}
+                  disabled={!isEditing}
+                />
+                <Label htmlFor="factory-verified" className={isEditing ? "cursor-pointer" : "cursor-not-allowed opacity-60"}>
+                  Fabrika Onaylı
+                </Label>
+              </div>
             )}
+            
+            <div className="flex space-x-2">
+              {isEditing ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSaving}
+                  >
+                    İptal
+                  </Button>
+                  <Button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setIsEditing(true)}>
+                  Düzenle
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
