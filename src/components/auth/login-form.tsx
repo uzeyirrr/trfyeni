@@ -36,6 +36,16 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await pb.collection('users').authWithPassword(data.email, data.password);
+      
+      // Factory kullanıcısı kontrolü
+      const user = pb.authStore.model;
+      if (user?.role === 'factory' && user?.factory_verified === false) {
+        pb.authStore.clear();
+        toast.error('Hesabınız henüz onaylanmadı. Lütfen yönetici onayını bekleyin.');
+        setIsLoading(false);
+        return;
+      }
+      
       toast.success('Başarıyla giriş yapıldı!');
       router.push('/dashboard');
     } catch (error) {
@@ -55,6 +65,14 @@ export function LoginForm() {
       const user = pb.authStore.model;
       if (user && !user.role) {
         await pb.collection('users').update(user.id, { role: 'user' });
+      }
+      
+      // Factory kullanıcısı kontrolü
+      if (user?.role === 'factory' && user?.factory_verified === false) {
+        pb.authStore.clear();
+        toast.error('Hesabınız henüz onaylanmadı. Lütfen yönetici onayını bekleyin.');
+        setIsLoading(false);
+        return;
       }
       
       toast.success('Google ile giriş başarılı!');
