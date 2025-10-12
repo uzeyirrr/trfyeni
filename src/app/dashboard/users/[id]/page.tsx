@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { pb, getCurrentUser, AuthModel } from '@/lib/pocketbase';
+import { pb } from '@/lib/pocketbase';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,13 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { 
-  User, 
-  Phone, 
-  MapPin, 
-  CreditCard, 
   FileText, 
   Upload, 
   X,
@@ -50,7 +45,6 @@ export default function UserDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [currentUser] = useState<AuthModel | null>(getCurrentUser());
   const [formData, setFormData] = useState<Partial<UserData>>({});
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [newFiles, setNewFiles] = useState<File[]>([]);
@@ -58,7 +52,7 @@ export default function UserDetailPage() {
   const userId = params.id as string;
 
   // Kullanıcı verilerini çek
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     if (!userId) return;
     
     setIsLoading(true);
@@ -88,11 +82,11 @@ export default function UserDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchUser();
-  }, [userId]);
+  }, [fetchUser]);
 
   // Form verilerini güncelle
   const handleInputChange = (field: keyof UserData, value: string) => {
@@ -119,11 +113,11 @@ export default function UserDetailPage() {
   };
 
   // Mevcut dosyayı kaldır
-  const removeExistingFile = async (fileId: string) => {
+  const removeExistingFile = async (fileName: string) => {
     if (!user) return;
     
     try {
-      const updatedFiles = user.files?.filter(id => id !== fileId) || [];
+      const updatedFiles = user.files?.filter(name => name !== fileName) || [];
       await pb.collection('users').update(user.id, { files: updatedFiles });
       setUser(prev => prev ? { ...prev, files: updatedFiles } : null);
       setFormData(prev => ({ ...prev, files: updatedFiles }));
@@ -140,7 +134,7 @@ export default function UserDetailPage() {
     
     setIsSaving(true);
     try {
-      const updateData: any = { ...formData };
+      const updateData: Partial<UserData> & { avatar?: string; files?: string[] } = { ...formData };
       
       // Avatar yükle
       if (newAvatar) {
@@ -175,8 +169,15 @@ export default function UserDetailPage() {
   };
 
   // Dosya URL'si al
-  const getFileUrl = (fileId: string) => {
-    return pb.files.getUrl('users', fileId);
+  const getFileUrl = (fileName: string) => {
+    if (!user) return '';
+    return `${pb.baseUrl}/api/files/users/${user.id}/${fileName}`;
+  };
+  
+  // Avatar URL'si al
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return undefined;
+    return `${pb.baseUrl}/api/files/users/${user.id}/${user.avatar}`;
   };
 
   if (isLoading) {
@@ -257,7 +258,7 @@ export default function UserDetailPage() {
               <CardContent className="text-center">
                 <div className="relative inline-block">
                   <Avatar className="w-32 h-32 mx-auto mb-4">
-                    <AvatarImage src={user.avatar ? getFileUrl(user.avatar) : undefined} />
+                    <AvatarImage src={getAvatarUrl()} />
                     <AvatarFallback className="text-2xl">
                       {user.name?.charAt(0)?.toUpperCase() || 'U'}
                     </AvatarFallback>
@@ -449,17 +450,20 @@ export default function UserDetailPage() {
                   <div>
                     <Label className="text-sm font-medium">Mevcut Dosyalar</Label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                      {user.files.map((fileId, index) => (
-                        <div key={fileId} className="flex items-center justify-between p-3 border rounded-lg">
+                      {user.files.map((fileName) => (
+                        <div key={fileName} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center space-x-2">
                             <FileText className="h-4 w-4 text-blue-500" />
-                            <span className="text-sm">Dosya {index + 1}</span>
+                            <span className="text-sm truncate max-w-[150px]" title={fileName}>
+                              {fileName.length > 20 ? fileName.substring(0, 20) + '...' : fileName}
+                            </span>
                           </div>
                           <div className="flex space-x-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => window.open(getFileUrl(fileId), '_blank')}
+                              onClick={() => window.open(getFileUrl(fileName), '_blank')}
+                              title="Görüntüle"
                             >
                               <Eye className="h-3 w-3" />
                             </Button>
@@ -468,10 +472,14 @@ export default function UserDetailPage() {
                               size="sm"
                               onClick={() => {
                                 const link = document.createElement('a');
-                                link.href = getFileUrl(fileId);
-                                link.download = `dosya_${index + 1}`;
+                                link.href = getFileUrl(fileName);
+                                link.download = fileName;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
                                 link.click();
+                                document.body.removeChild(link);
                               }}
+                              title="İndir"
                             >
                               <Download className="h-3 w-3" />
                             </Button>
@@ -479,7 +487,8 @@ export default function UserDetailPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => removeExistingFile(fileId)}
+                                onClick={() => removeExistingFile(fileName)}
+                                title="Sil"
                               >
                                 <X className="h-3 w-3" />
                               </Button>
