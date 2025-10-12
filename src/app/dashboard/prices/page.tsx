@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { pb, getCurrentUser } from '@/lib/pocketbase';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -55,15 +53,20 @@ export default function PricesPage() {
 
   const currentUser = getCurrentUser();
   const isAdmin = currentUser?.role === 'admin';
-
-
+  const isFactory = currentUser?.role === 'factory';
+  const canManagePrices = isAdmin || isFactory;
 
   // Fiyat verilerini çek
-  const fetchPrices = async () => {
+  const fetchPrices = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Fabrika kullanıcısı ise sadece kendi fiyatlarını getir
+      const filter = isFactory ? `factory = "${currentUser?.id}"` : '';
+      
       const records = await pb.collection('price').getList(1, 50, {
         sort: '-created',
+        filter: filter,
+        expand: 'factory',
       });
       setPrices(records.items as unknown as PriceData[]);
     } catch (error) {
@@ -72,11 +75,11 @@ export default function PricesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isFactory, currentUser?.id]);
 
   useEffect(() => {
     fetchPrices();
-  }, []);
+  }, [fetchPrices]);
 
   // Grafik için veri hazırla
   const chartData = prices
@@ -104,9 +107,16 @@ export default function PricesPage() {
     setIsSubmitting(true);
     
     try {
-      await pb.collection('price').create({
+      const data: { price: number; factory?: string } = {
         price: parseFloat(formData.price),
-      });
+      };
+      
+      // Fabrika kullanıcısı ise factory alanını otomatik ekle
+      if (isFactory && currentUser?.id) {
+        data.factory = currentUser.id;
+      }
+      
+      await pb.collection('price').create(data);
       
       toast.success('Fiyat başarıyla eklendi');
       setFormData({ price: '' });
@@ -136,7 +146,7 @@ export default function PricesPage() {
                <RefreshCw className="mr-2 h-4 w-4" />
                Yenile
              </Button>
-             {isAdmin && (
+             {canManagePrices && (
                <Button onClick={() => setShowForm(true)} size="sm">
                  <Plus className="mr-2 h-4 w-4" />
                  Yeni Fiyat
