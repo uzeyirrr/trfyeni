@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
@@ -20,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Camera, Save, User } from 'lucide-react';
+import { Camera, Save } from 'lucide-react';
+import { ClientResponseError } from 'pocketbase';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
@@ -33,14 +33,14 @@ const profileSchema = z.object({
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
-interface City {
+type Cities = {
   [key: string]: string;
-}
+};
 
 export default function ProfilePage() {
   const [user, setUser] = useState<AuthModel | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [cities, setCities] = useState<City[]>([]);
+  const [cities, setCities] = useState<Cities>({});
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -92,11 +92,12 @@ export default function ProfilePage() {
 
 
   const onSubmit = async (data: ProfileForm) => {
+    if (!user) return;
+    
     setIsLoading(true);
     try {
-      const record = await pb.collection('users').update(user.id, {
+      await pb.collection('users').update(user.id, {
         name: data.name,
-        email: data.email,
         phone: data.phone,
         tc: data.tc,
         city: data.city,
@@ -104,9 +105,13 @@ export default function ProfilePage() {
       });
       
       toast.success('Profil başarıyla güncellendi!');
-      setUser(record);
-    } catch (error: any) {
-      toast.error(error.message || 'Profil güncellenemedi');
+      
+      // Güncellenmiş kullanıcı bilgisini al
+      const updatedUser = getCurrentUser();
+      setUser(updatedUser);
+    } catch (error) {
+      const err = error as ClientResponseError;
+      toast.error(err.message || 'Profil güncellenemedi');
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +119,7 @@ export default function ProfilePage() {
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     try {
       const formData = new FormData();
@@ -126,8 +131,9 @@ export default function ProfilePage() {
       // Kullanıcı bilgilerini yenile
       const updatedUser = getCurrentUser();
       setUser(updatedUser);
-    } catch (error: any) {
-      toast.error('Profil fotoğrafı güncellenemedi');
+    } catch (error) {
+      const err = error as ClientResponseError;
+      toast.error(err.message || 'Profil fotoğrafı güncellenemedi');
     }
   };
 
@@ -248,8 +254,8 @@ export default function ProfilePage() {
                       <SelectTrigger>
                         <SelectValue placeholder="Şehir seçiniz" />
                       </SelectTrigger>
-                                             <SelectContent>
-                         <div className="p-2">
+                                             <SelectContent className="max-h-[300px]">
+                         <div className="p-2 sticky top-0 bg-white z-10">
                            <Input
                              placeholder="Şehir ara..."
                              value={searchTerm}
@@ -257,15 +263,17 @@ export default function ProfilePage() {
                              className="mb-2"
                            />
                          </div>
-                         {Object.entries(cities)
-                           .filter(([id, name]) => 
-                             name.toLowerCase().includes(searchTerm.toLowerCase())
-                           )
-                           .map(([id, name]) => (
-                             <SelectItem key={id} value={name}>
-                               {name}
-                             </SelectItem>
-                           ))}
+                         <div className="overflow-y-auto max-h-[250px]">
+                           {Object.entries(cities)
+                             .filter(([, cityName]) => 
+                               cityName.toLowerCase().includes(searchTerm.toLowerCase())
+                             )
+                             .map(([cityId, cityName]) => (
+                               <SelectItem key={cityId} value={cityName}>
+                                 {cityName}
+                               </SelectItem>
+                             ))}
+                         </div>
                        </SelectContent>
                     </Select>
                     {form.formState.errors.city && (
