@@ -174,15 +174,15 @@ export default function PricesPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ortalama Fiyat</CardTitle>
+              <CardTitle className="text-sm font-medium">Fabrika Adı</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ₺{averagePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                {currentUser?.name || 'Bilinmeyen Kullanıcı'}
               </div>
               <p className="text-xs text-muted-foreground">
-                {prices.length} kayıt üzerinden
+                Kullanıcı adı
               </p>
             </CardContent>
           </Card>
