@@ -50,6 +50,13 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await pb.collection('users').authWithOAuth2({ provider: 'google' });
+      
+      // Kullanıcının rolü yoksa "user" rolü ata
+      const user = pb.authStore.model;
+      if (user && !user.role) {
+        await pb.collection('users').update(user.id, { role: 'user' });
+      }
+      
       toast.success('Google ile giriş başarılı!');
       router.push('/dashboard');
     } catch (error) {
