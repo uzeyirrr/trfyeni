@@ -134,8 +134,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
       user.phone,
       user.tc,
       user.city,
-      user.iban,
-      user.avatar
+      user.iban
     ];
     
     const completedFields = fields.filter(field => {
@@ -143,7 +142,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
       if (typeof field === 'string') {
         return field.trim() !== '';
       }
-      return true; // avatar gibi dosya alanları için
+      return true;
     }).length;
     
     return Math.round((completedFields / fields.length) * 100);
