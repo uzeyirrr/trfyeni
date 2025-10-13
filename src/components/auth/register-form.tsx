@@ -12,12 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TermsOfServiceDialog, PrivacyPolicyDialog } from '@/components/legal/legal-dialogs';
 
 // İller verisi
 const iller = {
@@ -45,6 +47,9 @@ const userRegisterSchema = z.object({
   email: z.string().email('Geçerli bir email adresi girin'),
   password: z.string().min(6, 'Şifre en az 6 karakter olmalıdır'),
   passwordConfirm: z.string(),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Kullanım sözleşmesini kabul etmelisiniz",
+  }),
 }).refine((data) => data.password === data.passwordConfirm, {
   message: "Şifreler eşleşmiyor",
   path: ["passwordConfirm"],
@@ -68,6 +73,9 @@ const factoryRegisterSchema = z.object({
       }
       return true;
     }, 'Sadece PDF, PNG ve JPEG dosyaları yüklenebilir.'),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Kullanım sözleşmesini kabul etmelisiniz",
+  }),
 }).refine((data) => data.password === data.passwordConfirm, {
   message: "Şifreler eşleşmiyor",
   path: ["passwordConfirm"],
@@ -89,6 +97,7 @@ export function RegisterForm() {
       email: '',
       password: '',
       passwordConfirm: '',
+      acceptTerms: false,
     },
   });
 
@@ -102,6 +111,7 @@ export function RegisterForm() {
       phone: '',
       city: '',
       files: undefined,
+      acceptTerms: false,
     },
   });
 
@@ -220,6 +230,32 @@ export function RegisterForm() {
                   <p className="text-sm text-red-500">{userForm.formState.errors.passwordConfirm.message}</p>
                 )}
               </div>
+
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="user-acceptTerms"
+                  checked={userForm.watch('acceptTerms')}
+                  onCheckedChange={(checked) => userForm.setValue('acceptTerms', checked as boolean)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="user-acceptTerms"
+                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    <TermsOfServiceDialog>
+                      <a href="#" className="text-blue-600 hover:underline cursor-pointer">Kullanım Sözleşmesi</a>
+                    </TermsOfServiceDialog>
+                    {' '}ve{' '}
+                    <PrivacyPolicyDialog>
+                      <a href="#" className="text-blue-600 hover:underline cursor-pointer">Gizlilik Politikası</a>
+                    </PrivacyPolicyDialog>
+                    &apos;nı okudum ve kabul ediyorum.
+                  </Label>
+                </div>
+              </div>
+              {userForm.formState.errors.acceptTerms && (
+                <p className="text-sm text-red-500">{userForm.formState.errors.acceptTerms.message}</p>
+              )}
               
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Kayıt oluşturuluyor...' : 'Kullanıcı Olarak Kayıt Ol'}
@@ -355,6 +391,32 @@ export function RegisterForm() {
                   <p className="text-sm text-red-500">{factoryForm.formState.errors.passwordConfirm.message}</p>
                 )}
               </div>
+
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="factory-acceptTerms"
+                  checked={factoryForm.watch('acceptTerms')}
+                  onCheckedChange={(checked) => factoryForm.setValue('acceptTerms', checked as boolean)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label
+                    htmlFor="factory-acceptTerms"
+                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    <TermsOfServiceDialog>
+                      <a href="#" className="text-blue-600 hover:underline cursor-pointer">Kullanım Sözleşmesi</a>
+                    </TermsOfServiceDialog>
+                    {' '}ve{' '}
+                    <PrivacyPolicyDialog>
+                      <a href="#" className="text-blue-600 hover:underline cursor-pointer">Gizlilik Politikası</a>
+                    </PrivacyPolicyDialog>
+                    &apos;nı okudum ve kabul ediyorum.
+                  </Label>
+                </div>
+              </div>
+              {factoryForm.formState.errors.acceptTerms && (
+                <p className="text-sm text-red-500">{factoryForm.formState.errors.acceptTerms.message}</p>
+              )}
               
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Kayıt oluşturuluyor...' : 'Fabrika Olarak Kayıt Ol'}

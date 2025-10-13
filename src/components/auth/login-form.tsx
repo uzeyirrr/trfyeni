@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ClientResponseError } from 'pocketbase';
+import { TermsOfServiceDialog, PrivacyPolicyDialog } from '@/components/legal/legal-dialogs';
 
 const loginSchema = z.object({
   email: z.string().email('Geçerli bir email adresi girin'),
@@ -164,6 +165,17 @@ export function LoginForm() {
         </Button>
         
         <div className="mt-4 text-center space-y-2">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Uygulamayı kullanarak{' '}
+            <TermsOfServiceDialog>
+              <a href="#" className="text-blue-600 hover:underline cursor-pointer">Kullanım Sözleşmesi</a>
+            </TermsOfServiceDialog>
+            {' '}ve{' '}
+            <PrivacyPolicyDialog>
+              <a href="#" className="text-blue-600 hover:underline cursor-pointer">Gizlilik Politikası</a>
+            </PrivacyPolicyDialog>
+            &apos;nı kabul etmiş sayılırsınız.
+          </p>
           <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
             Şifremi unuttum
           </a>
