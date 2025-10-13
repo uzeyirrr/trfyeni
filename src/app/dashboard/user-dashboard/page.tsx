@@ -108,7 +108,7 @@ export default function UserDashboardPage() {
         return deliveryDate.getMonth() === currentMonth && 
                deliveryDate.getFullYear() === currentYear;
       })
-      .reduce((sum, d) => sum + (d.factory_price || 0), 0);
+      .reduce((sum, d) => sum + parseFloat(d.factory_price.toString() || '0'), 0);
 
     setStats({
       totalDeliveries,
