@@ -29,7 +29,12 @@ import {
   User,
   Receipt,
   Download,
-  Printer
+  Printer,
+  X,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 
 interface DeliveryData {
@@ -46,7 +51,14 @@ interface DeliveryData {
   created: string;
   updated: string;
   expand?: {
-    user?: { name: string; email: string };
+    user?: { 
+      name: string; 
+      email: string; 
+      phone?: string; 
+      city?: string; 
+      address?: string; 
+      iban?: string; 
+    };
     factory?: { name: string };
     price?: { price: number };
   };
@@ -59,6 +71,8 @@ export default function PaymentsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryData | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   const currentUser = getCurrentUser();
 
@@ -69,7 +83,8 @@ export default function PaymentsPage() {
       const records = await pb.collection('deliveries').getList(1, 100, {
         sort: '-created',
         expand: 'user,factory,price',
-        filter: 'tamamlandi = true'
+        filter: 'tamamlandi = true',
+        fields: 'id,kg,user,factory,price,factory_price,delivery_date,tamamlandi,randiman,odeme_tamamlandi,created,updated,expand.user.id,expand.user.name,expand.user.email,expand.user.phone,expand.user.city,expand.user.address,expand.user.iban,expand.factory.name,expand.price.price'
       });
       
       const processedDeliveries = records.items.map(item => ({
@@ -407,6 +422,7 @@ Tarih: ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString
                                          <TableRow>
                        <TableHead>ID</TableHead>
                        <TableHead>Kullanıcı</TableHead>
+                       <TableHead>IBAN</TableHead>
                        <TableHead>Teslimat Tarihi</TableHead>
                        <TableHead>Kg</TableHead>
                        <TableHead>Fabrika</TableHead>
@@ -423,12 +439,35 @@ Tarih: ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString
                           {delivery.id.slice(0, 8)}...
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col">
+                          <div 
+                            className="flex flex-col cursor-pointer hover:bg-gray-50 p-2 rounded"
+                            onClick={() => {
+                              setSelectedUser(delivery.expand?.user);
+                              setShowUserModal(true);
+                            }}
+                          >
                             <span className="font-medium">
                               {delivery.expand?.user?.name || 'Bilinmiyor'}
                             </span>
                             <span className="text-xs text-gray-500">
                               {delivery.expand?.user?.email || 'Email yok'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div 
+                            className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded"
+                            onClick={() => {
+                              if (delivery.expand?.user?.iban) {
+                                navigator.clipboard.writeText(delivery.expand.user.iban);
+                                toast.success('IBAN panoya kopyalandı');
+                              }
+                            }}
+                            title={delivery.expand?.user?.iban ? 'IBAN\'ı kopyalamak için tıklayın' : 'IBAN yok'}
+                          >
+                            <CreditCard className="mr-2 h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-mono">
+                              {delivery.expand?.user?.iban || 'IBAN yok'}
                             </span>
                           </div>
                         </TableCell>
@@ -553,6 +592,109 @@ Tarih: ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString
                 <Download className="mr-2 h-4 w-4" />
                 İndir
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kullanıcı Detay Modal */}
+      {showUserModal && selectedUser && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center bg-black bg-opacity-75 z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Kullanıcı Bilgileri</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUserModal(false)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Kullanıcı Bilgileri */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Kişisel Bilgiler</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <User className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Ad Soyad</p>
+                        <p className="text-gray-600">{selectedUser.name || 'Belirtilmemiş'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <Mail className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">E-posta</p>
+                        <p className="text-gray-600">{selectedUser.email || 'Belirtilmemiş'}</p>
+                      </div>
+                    </div>
+
+                    {selectedUser.phone && (
+                      <div className="flex items-center space-x-3">
+                        <Phone className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Telefon</p>
+                          <p className="text-gray-600">{selectedUser.phone}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedUser.city && (
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Şehir</p>
+                          <p className="text-gray-600">{selectedUser.city}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedUser.address && (
+                      <div className="flex items-start space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Tam Adres</p>
+                          <p className="text-gray-600">{selectedUser.address}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedUser.iban && (
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="h-5 w-5 text-gray-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">IBAN</p>
+                          <p 
+                            className="text-gray-600 font-mono cursor-pointer hover:bg-gray-50 p-2 rounded"
+                            onClick={() => {
+                              navigator.clipboard.writeText(selectedUser.iban);
+                              toast.success('IBAN panoya kopyalandı');
+                            }}
+                            title="IBAN'ı kopyalamak için tıklayın"
+                          >
+                            {selectedUser.iban}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t">
+                <Button 
+                  onClick={() => setShowUserModal(false)}
+                  className="w-full"
+                >
+                  Kapat
+                </Button>
+              </div>
             </div>
           </div>
         </div>
