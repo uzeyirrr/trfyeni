@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { pb, getCurrentUser, AuthModel } from '@/lib/pocketbase';
+import { pb, getCurrentUser } from '@/lib/pocketbase';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,9 @@ export default function FactoryDeliveriesPage() {
     kg: '',
     factory_price: '',
     randiman: '',
+    saglam_ic: '',
+    bezik_ic: '',
+    numune_agirligi: '',
     tamamlandi: false
   });
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
@@ -119,6 +122,18 @@ export default function FactoryDeliveriesPage() {
     fetchDeliveries();
   }, []);
 
+  // Randıman hesaplama fonksiyonu
+  const calculateRandiman = (saglamIc: number, bezikIc: number, numuneAgirligi: number) => {
+    if (numuneAgirligi === 0) return 0;
+    return ((saglamIc + (bezikIc * 0.5)) / numuneAgirligi) * 100;
+  };
+
+  // Fabrika fiyatı hesaplama fonksiyonu
+  const calculateFactoryPrice = (piyasaFiyati: number, randiman: number, kg: number) => {
+    if (piyasaFiyati === 0 || randiman === 0 || kg === 0) return 0;
+    return (piyasaFiyati / 50) * randiman * kg;
+  };
+
   // Düzenleme modunu aç
   const handleEdit = (delivery: DeliveryData) => {
     setEditingDelivery(delivery.id);
@@ -126,8 +141,44 @@ export default function FactoryDeliveriesPage() {
       kg: delivery.kg.toString(),
       factory_price: delivery.factory_price.toString(),
       randiman: delivery.randiman.toString(),
+      saglam_ic: '',
+      bezik_ic: '',
+      numune_agirligi: '',
       tamamlandi: delivery.tamamlandi
     });
+  };
+
+  // Randıman hesapla butonuna tıklama
+  const handleCalculateRandiman = () => {
+    const saglamIc = parseFloat(editForm.saglam_ic) || 0;
+    const bezikIc = parseFloat(editForm.bezik_ic) || 0;
+    const numuneAgirligi = parseFloat(editForm.numune_agirligi) || 0;
+    
+    if (numuneAgirligi === 0) {
+      toast.error('Numune ağırlığı 0 olamaz');
+      return;
+    }
+    
+    const calculatedRandiman = calculateRandiman(saglamIc, bezikIc, numuneAgirligi);
+    setEditForm({...editForm, randiman: calculatedRandiman.toFixed(2)});
+    toast.success(`Randıman hesaplandı: %${calculatedRandiman.toFixed(2)}`);
+  };
+
+  // Fabrika fiyatı hesapla butonuna tıklama
+  const handleCalculateFactoryPrice = () => {
+    const piyasaFiyati = parseFloat(editForm.kg) ? 
+      deliveries.find(d => d.id === editingDelivery)?.price || 0 : 0;
+    const randiman = parseFloat(editForm.randiman) || 0;
+    const kg = parseFloat(editForm.kg) || 0;
+    
+    if (piyasaFiyati === 0 || randiman === 0 || kg === 0) {
+      toast.error('Piyasa fiyatı, randıman ve kg değerleri gerekli');
+      return;
+    }
+    
+    const calculatedFactoryPrice = calculateFactoryPrice(piyasaFiyati, randiman, kg);
+    setEditForm({...editForm, factory_price: calculatedFactoryPrice.toFixed(2)});
+    toast.success(`Fabrika fiyatı hesaplandı: ₺${calculatedFactoryPrice.toFixed(2)}`);
   };
 
   // Düzenlemeyi kaydet
@@ -192,7 +243,7 @@ export default function FactoryDeliveriesPage() {
       return searchMatch && statusMatch;
     })
     .sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: number, bValue: number;
       
       switch (sortBy) {
         case 'created':
@@ -280,7 +331,7 @@ const totalValue = deliveries.reduce((sum, d) => {
               </div>
 
               {/* Durum Filtresi */}
-              <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+              <Select value={statusFilter} onValueChange={(value: 'all' | 'completed' | 'pending') => setStatusFilter(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Durum seçin" />
                 </SelectTrigger>
@@ -292,7 +343,7 @@ const totalValue = deliveries.reduce((sum, d) => {
               </Select>
 
               {/* Sıralama Alanı */}
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <Select value={sortBy} onValueChange={(value: 'created' | 'delivery_date' | 'kg' | 'factory_price') => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sıralama alanı" />
                 </SelectTrigger>
@@ -448,28 +499,98 @@ const totalValue = deliveries.reduce((sum, d) => {
                       </TableCell>
                       <TableCell>
                         {editingDelivery === delivery.id ? (
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={editForm.factory_price}
-                            onChange={(e) => setEditForm({...editForm, factory_price: e.target.value})}
-                            className="w-24"
-                          />
+                          <div className="space-y-2 min-w-[200px]">
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={editForm.factory_price}
+                                onChange={(e) => setEditForm({...editForm, factory_price: e.target.value})}
+                                className="w-32"
+                                placeholder="₺"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCalculateFactoryPrice}
+                                className="h-8 px-2 text-xs"
+                              >
+                                <Calculator className="h-3 w-3 mr-1" />
+                                Hesapla
+                              </Button>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Formül: (Piyasa ÷ 50) × Randıman × Kg
+                            </div>
+                          </div>
                         ) : (
                           <span className="font-medium">₺{delivery.factory_price.toLocaleString()}</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {editingDelivery === delivery.id ? (
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={editForm.randiman}
-                            onChange={(e) => setEditForm({...editForm, randiman: e.target.value})}
-                            className="w-20"
-                          />
+                          <div className="space-y-3 min-w-[400px]">
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <Label className="text-xs text-gray-600">Sağlam İç</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="Gram"
+                                  value={editForm.saglam_ic}
+                                  onChange={(e) => setEditForm({...editForm, saglam_ic: e.target.value})}
+                                  className="w-full"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-600">Bezik İç</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="Gram"
+                                  value={editForm.bezik_ic}
+                                  onChange={(e) => setEditForm({...editForm, bezik_ic: e.target.value})}
+                                  className="w-full"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-600">Numune</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="Gram"
+                                  value={editForm.numune_agirligi}
+                                  onChange={(e) => setEditForm({...editForm, numune_agirligi: e.target.value})}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCalculateRandiman}
+                                className="h-8 px-3 text-sm"
+                              >
+                                <Calculator className="h-4 w-4 mr-2" />
+                                Randıman Hesapla
+                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <Label className="text-sm font-medium">Sonuç:</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editForm.randiman}
+                                  onChange={(e) => setEditForm({...editForm, randiman: e.target.value})}
+                                  className="w-20 text-center font-medium"
+                                  placeholder="%"
+                                />
+                                <span className="text-sm text-gray-500">%</span>
+                              </div>
+                            </div>
+                          </div>
                         ) : (
-                          <span>{delivery.randiman}%</span>
+                          <span className="font-medium">{delivery.randiman}%</span>
                         )}
                       </TableCell>
                       <TableCell>

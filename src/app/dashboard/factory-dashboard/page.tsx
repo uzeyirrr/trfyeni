@@ -89,8 +89,8 @@ export default function FactoryDashboardPage() {
   }, [currentUser?.id]);
 
   // İstatistikler
-  const totalKg = deliveries.reduce((sum, delivery) => sum + delivery.kg, 0);
-  const totalValue = deliveries.reduce((sum, delivery) => sum + (delivery.kg * delivery.factory_price), 0);
+const totalKg = deliveries.reduce((sum, delivery) => sum + (Number(delivery.kg) || 0), 0);
+  const totalValue = deliveries.reduce((sum, delivery) => sum + (1 * delivery.factory_price), 0);
   const completedDeliveries = deliveries.filter(d => d.tamamlandi).length;
   const pendingDeliveries = deliveries.filter(d => !d.tamamlandi).length;
   const paidDeliveries = deliveries.filter(d => d.odeme_tamamlandi).length;
@@ -246,7 +246,7 @@ export default function FactoryDashboardPage() {
                         ₺{delivery.factory_price.toLocaleString()}
                       </TableCell>
                       <TableCell className="font-bold">
-                        ₺{(delivery.kg * delivery.factory_price).toLocaleString()}
+                        ₺{(1 * delivery.factory_price).toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
