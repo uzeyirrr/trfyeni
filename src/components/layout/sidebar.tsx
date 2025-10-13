@@ -33,6 +33,7 @@ import {
   TrendingUp,
   Bus,
   Factory,
+  BarChart,
 } from 'lucide-react';
 
 const menuItems = [
@@ -77,6 +78,12 @@ const menuItems = [
     href: '/dashboard/prices',
     icon: TrendingUp,
     roles: ['admin', 'factory', 'user', 'company'], // Tüm roller erişebilir
+  },
+  {
+    title: 'Fabrika Fiyatları',
+    href: '/dashboard/producer-prices',
+    icon: BarChart,
+    roles: ['admin', 'user', 'company'], // Admin, kullanıcılar ve şirketler (fabrikalar hariç)
   },
   {
     title: 'Ödemeler',

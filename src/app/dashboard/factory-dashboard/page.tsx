@@ -53,11 +53,11 @@ export default function FactoryDashboardPage() {
     
     setIsLoading(true);
     try {
-             const records = await pb.collection('deliveries').getList(1, 100, {
-         sort: '-created',
-         expand: 'user,price',
-         filter: `factory = "${currentUser.id}"`
-       });
+      const records = await pb.collection('deliveries').getList(1, 100, {
+        sort: '-created',
+        expand: 'user',
+        filter: `factory = "${currentUser.id}"`
+      });
       
       const processedDeliveries = records.items.map(item => ({
         id: item.id,
@@ -65,7 +65,7 @@ export default function FactoryDashboardPage() {
         user: item.user,
         user_name: item.expand?.user?.name || 'Bilinmeyen Kullanıcı',
         factory: item.factory,
-                 price: item.expand?.price?.price || 0,
+        price: item.price || 0,
         factory_price: item.factory_price || 0,
         delivery_date: item.delivery_date || item.created,
         tamamlandi: item.tamamlandi || false,
@@ -89,8 +89,8 @@ export default function FactoryDashboardPage() {
   }, [currentUser?.id]);
 
   // İstatistikler
-  const totalKg = deliveries.reduce((sum, delivery) => sum + (parseFloat(delivery.kg?.toString() || '0') || 0), 0);
-  const totalValue = deliveries.reduce((sum, delivery) => sum + (parseFloat(delivery.factory_price?.toString() || '0') || 0), 0);
+  const totalKg = deliveries.reduce((sum, delivery) => sum + delivery.kg, 0);
+  const totalValue = deliveries.reduce((sum, delivery) => sum + (delivery.kg * delivery.factory_price), 0);
   const completedDeliveries = deliveries.filter(d => d.tamamlandi).length;
   const pendingDeliveries = deliveries.filter(d => !d.tamamlandi).length;
   const paidDeliveries = deliveries.filter(d => d.odeme_tamamlandi).length;
@@ -217,9 +217,10 @@ export default function FactoryDashboardPage() {
                     <TableHead>Tarih</TableHead>
                     <TableHead>Müşteri</TableHead>
                     <TableHead>Kg</TableHead>
-                                         <TableHead>Fiyat</TableHead>
-                                         <TableHead>Fabrika Fiyatı</TableHead>
-                     <TableHead>Durum</TableHead>
+                    <TableHead>Müşteri Fiyatı</TableHead>
+                    <TableHead>Fabrika Fiyatı</TableHead>
+                    <TableHead>Toplam Değer</TableHead>
+                    <TableHead>Durum</TableHead>
                     <TableHead>Ödeme</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -241,10 +242,13 @@ export default function FactoryDashboardPage() {
                       <TableCell>
                         ₺{delivery.price.toLocaleString()}
                       </TableCell>
-                                             <TableCell>
-                         ₺{delivery.factory_price.toLocaleString()}
-                       </TableCell>
-                       <TableCell>
+                      <TableCell>
+                        ₺{delivery.factory_price.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="font-bold">
+                        ₺{(delivery.kg * delivery.factory_price).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           delivery.tamamlandi 
                             ? 'bg-green-100 text-green-800' 

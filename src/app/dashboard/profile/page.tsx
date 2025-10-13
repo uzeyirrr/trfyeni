@@ -28,6 +28,7 @@ const profileSchema = z.object({
   phone: z.string().min(10, 'Telefon numarası en az 10 karakter olmalıdır'),
   tc: z.string().min(11, 'TC kimlik numarası 11 karakter olmalıdır').max(11),
   city: z.string().min(1, 'Şehir seçiniz'),
+  address: z.string().min(5, 'Tam adres en az 5 karakter olmalıdır'),
   iban: z.string().min(1, 'IBAN giriniz'),
 });
 
@@ -52,6 +53,7 @@ export default function ProfilePage() {
       phone: '',
       tc: '',
       city: '',
+      address: '',
       iban: '',
     },
   });
@@ -83,6 +85,7 @@ export default function ProfilePage() {
         phone: currentUser.phone || '',
         tc: currentUser.tc || '',
         city: currentUser.city || '',
+        address: currentUser.address || '',
         iban: currentUser.iban || '',
       });
       setSelectedCity(currentUser.city || '');
@@ -101,6 +104,7 @@ export default function ProfilePage() {
         phone: data.phone,
         tc: data.tc,
         city: data.city,
+        address: data.address,
         iban: data.iban,
       });
       
@@ -281,7 +285,17 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Tam Adres</Label>
+                    <Input
+                      id="address"
+                      {...form.register('address')}
+                      placeholder="Mahalle, sokak, bina no, daire no vb."
+                    />
+                    {form.formState.errors.address && (
+                      <p className="text-sm text-red-500">{form.formState.errors.address.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
