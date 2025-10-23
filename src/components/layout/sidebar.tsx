@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -19,11 +19,8 @@ import { getCurrentUser, logout } from '@/lib/pocketbase';
 import { 
   Home, 
   User, 
-  Settings, 
   LogOut, 
   Menu,
-  BarChart3,
-  FileText,
   Users,
   Package,
   Truck,
@@ -33,7 +30,6 @@ import {
   TrendingUp,
   Bus,
   Factory,
-  BarChart,
 } from 'lucide-react';
 
 const menuItems = [
@@ -161,21 +157,59 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
       isCollapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        {!isCollapsed && (
-          <h1 className="text-xl font-bold text-gray-900">Türkiye Fındık</h1>
+      <div className={cn(
+        "flex items-center border-b border-gray-200 relative",
+        isCollapsed ? "justify-center p-4" : "justify-between p-4"
+      )}>
+        {!isCollapsed ? (
+          <>
+            <div className="flex items-center space-x-3">
+              {/* Logo */}
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden">
+                <Image
+                  src="/logo.png"
+                  alt="Türkiye Fındık Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-gray-900">Türkiye Fındık</h1>
+                <p className="text-xs text-gray-500">Fındık Platformu</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCollapse}
+              className="ml-auto"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            {/* Collapsed Logo */}
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="Türkiye Fındık Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCollapse}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          </>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCollapse}
-          className={cn(
-            "ml-auto",
-            isCollapsed && "ml-0 mx-auto"
-          )}
-        >
-          <Menu className="h-4 w-4" />
-        </Button>
       </div>
 
              {/* User Profile */}

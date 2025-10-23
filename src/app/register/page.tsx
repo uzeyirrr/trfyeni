@@ -1,5 +1,6 @@
 import { RegisterForm } from '@/components/auth/register-form';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function RegisterPage() {
   return (
@@ -30,6 +31,18 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-lg overflow-hidden ">
+                <Image
+                  src="/logo.png"
+                  alt="Türkiye Fındık Logo"
+                  width={64}
+                  height={64}
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            </div>
             <h2 className="text-3xl font-bold text-gray-900">Hesap Oluştur</h2>
             <p className="mt-2 text-sm text-gray-600">
               Yeni bir hesap oluşturun
