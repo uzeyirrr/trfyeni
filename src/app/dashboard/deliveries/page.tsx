@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { pb, getCurrentUser, AuthModel } from '@/lib/pocketbase';
+import { pb, getCurrentUser } from '@/lib/pocketbase';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ interface DeliveryData {
   user: string;
   factory: string; // Artık fabrika adı olacak
   price: number;
+  price_type?: string; // Fındık türü
   delivery_date: string;
   created: string;
   updated: string;
@@ -41,7 +42,6 @@ interface DeliveryData {
 
 export default function DeliveriesPage() {
   const [deliveries, setDeliveries] = useState<DeliveryData[]>([]);
-  const [latestPrice, setLatestPrice] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
@@ -93,6 +93,7 @@ export default function DeliveriesPage() {
          user: item.user,
          factory: item.expand?.factory?.name || item.factory || 'Belirtilmemiş',
          price: item.expand?.price?.price || (typeof item.price === 'number' ? item.price : 0),
+         price_type: item.expand?.price?.type || 'Belirtilmemiş',
          delivery_date: item.delivery_date || item.created,
          created: item.created,
          updated: item.updated
@@ -109,23 +110,8 @@ export default function DeliveriesPage() {
 
 
 
-  // Son fiyatı çek
-  const fetchLatestPrice = async () => {
-    try {
-      const records = await pb.collection('price').getList(1, 1, {
-        sort: '-created',
-      });
-      if (records.items.length > 0) {
-        setLatestPrice(records.items[0].price);
-      }
-    } catch (error) {
-      console.error('Son fiyat yüklenirken hata:', error);
-    }
-  };
-
   useEffect(() => {
     fetchDeliveries();
-    fetchLatestPrice();
   }, []);
 
   // Yeni teslimat ekleme başarılı olduğunda
@@ -287,6 +273,7 @@ export default function DeliveriesPage() {
                      <TableHead>Oluşturulma</TableHead>
                      <TableHead>Teslimat Tarihi</TableHead>
                      <TableHead>Kg</TableHead>
+                     <TableHead>Fındık Türü</TableHead>
                      <TableHead>Fabrika</TableHead>
                      <TableHead>Fiyat</TableHead>
                      <TableHead>Toplam</TableHead>
@@ -310,6 +297,22 @@ export default function DeliveriesPage() {
                        </TableCell>
                        <TableCell className="font-medium">
                          {(parseFloat(delivery.kg?.toString() || '0') || 0).toLocaleString()} kg
+                       </TableCell>
+                       <TableCell>
+                         <div className="flex items-center">
+                           <Package className="mr-2 h-4 w-4 text-gray-500" />
+                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                             delivery.price_type === 'dogu_karadeniz' ? 'bg-blue-100 text-blue-800' :
+                             delivery.price_type === 'bati_karadeniz' ? 'bg-red-100 text-red-800' :
+                             delivery.price_type === 'giresun' ? 'bg-green-100 text-green-800' :
+                             'bg-gray-100 text-gray-800'
+                           }`}>
+                             {delivery.price_type === 'dogu_karadeniz' ? 'Doğu Karadeniz' :
+                              delivery.price_type === 'bati_karadeniz' ? 'Batı Karadeniz' :
+                              delivery.price_type === 'giresun' ? 'Giresun' :
+                              delivery.price_type || 'Belirtilmemiş'}
+                           </span>
+                         </div>
                        </TableCell>
                                                <TableCell>
                           <div className="flex items-center">

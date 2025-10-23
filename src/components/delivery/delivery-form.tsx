@@ -30,12 +30,13 @@ interface DeliveryFormProps {
 
 export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) {
   const [factories, setFactories] = useState<FactoryUser[]>([]);
-  const [latestPrice, setLatestPrice] = useState<number>(0);
+  const [latestPrices, setLatestPrices] = useState<{[key: string]: number}>({});
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     kg: '',
     delivery_date: '',
-    factory: ''
+    factory: '',
+    type: 'dogu_karadeniz'
   });
   const [isVisible, setIsVisible] = useState(false);
 
@@ -72,17 +73,25 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
     }
   };
 
-  // Son fiyatı çek
-  const fetchLatestPrice = async () => {
+  // Her tipten son fiyatı çek
+  const fetchLatestPrices = async () => {
     try {
-      const records = await pb.collection('price').getList(1, 1, {
-        sort: '-created',
-      });
-      if (records.items.length > 0) {
-        setLatestPrice(records.items[0].price);
+      const types = ['dogu_karadeniz', 'bati_karadeniz', 'giresun'];
+      const prices: {[key: string]: number} = {};
+      
+      for (const type of types) {
+        const records = await pb.collection('price').getList(1, 1, {
+          sort: '-created',
+          filter: `type = "${type}"`
+        });
+        if (records.items.length > 0) {
+          prices[type] = records.items[0].price;
+        }
       }
+      
+      setLatestPrices(prices);
     } catch (error) {
-      console.error('Son fiyat yüklenirken hata:', error);
+      console.error('Son fiyatlar yüklenirken hata:', error);
     }
   };
 
@@ -90,7 +99,7 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
     if (isOpen) {
       setIsVisible(true);
       fetchFactories();
-      fetchLatestPrice();
+      fetchLatestPrices();
     } else {
       setIsVisible(false);
     }
@@ -110,9 +119,10 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
     setIsLoading(true);
     
     try {
-      // Son fiyatı tekrar çek (güncel olması için)
+      // Seçilen tipe göre fiyatı çek
       const priceRecords = await pb.collection('price').getList(1, 1, {
         sort: '-created',
+        filter: `type = "${formData.type}"`
       });
       const currentPrice = priceRecords.items.length > 0 ? priceRecords.items[0].id : '';
       
@@ -125,7 +135,7 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
       });
       
       toast.success('Teslimat başarıyla eklendi');
-      setFormData({ kg: '', delivery_date: '', factory: '' });
+      setFormData({ kg: '', delivery_date: '', factory: '', type: 'dogu_karadeniz' });
       onSuccess();
       handleClose();
     } catch (error) {
@@ -153,6 +163,27 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="type">Fındık Türü</Label>
+            <div className="relative">
+              <Select
+                value={formData.type}
+                onValueChange={(value) => setFormData({...formData, type: value})}
+                required
+              >
+                <SelectTrigger className="pl-10">
+                  <SelectValue placeholder="Fındık türü seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dogu_karadeniz">Doğu Karadeniz</SelectItem>
+                  <SelectItem value="bati_karadeniz">Batı Karadeniz</SelectItem>
+                  <SelectItem value="giresun">Giresun</SelectItem>
+                </SelectContent>
+              </Select>
+              <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+          
           <div>
             <Label htmlFor="kg">Tahmini Fındık Kilosu (kg)</Label>
             <div className="relative">
@@ -210,10 +241,10 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
 
           <div className="bg-gray-50 p-3 rounded-md">
             <p className="text-sm text-gray-600">
-              <strong>Son Fiyat:</strong> ₺{(latestPrice || 0).toLocaleString()}
+              <strong>Seçilen Tür Fiyatı:</strong> ₺{(latestPrices[formData.type] || 0).toLocaleString()}
             </p>
             <p className="text-sm text-gray-600">
-              <strong>Tahmini Toplam:</strong> ₺{formData.kg ? (parseFloat(formData.kg) * (latestPrice || 0)).toLocaleString() : '0'}
+              <strong>Tahmini Toplam:</strong> ₺{formData.kg ? (parseFloat(formData.kg) * (latestPrices[formData.type] || 0)).toLocaleString() : '0'}
             </p>
           </div>
           
