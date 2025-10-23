@@ -77,14 +77,9 @@ const menuItems = [
     title: 'Fındık Fiyatları',
     href: '/dashboard/prices',
     icon: TrendingUp,
-    roles: ['admin', 'factory', 'company'], // Tüm roller erişebilir
+    roles: ['admin', 'factory', 'user'], // Tüm roller erişebilir
   },
-  {
-    title: 'Fabrika Fiyatları',
-    href: '/dashboard/producer-prices',
-    icon: BarChart,
-    roles: ['admin', 'user', 'company'], // Admin, kullanıcılar ve şirketler (fabrikalar hariç)
-  },
+
   {
     title: 'Ödemeler',
     href: '/dashboard/payments',
