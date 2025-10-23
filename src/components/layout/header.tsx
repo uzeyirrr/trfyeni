@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getCurrentUser, logout } from '@/lib/pocketbase';
+import { PriceTicker } from '@/components/ui/price-ticker';
 import { 
   Bell, 
-  Search, 
   Menu,
   LogOut,
   User,
@@ -48,14 +48,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Menu className="h-5 w-5" />
           </Button>
           
-          {/* Search */}
-          <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-md px-3 py-2">
-            <Search className="h-4 w-4 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Ara..."
-              className="bg-transparent border-none outline-none text-sm w-64"
-            />
+          {/* Price Ticker */}
+          <div className="hidden md:block">
+            <PriceTicker />
           </div>
         </div>
 
