@@ -18,10 +18,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
 } from 'recharts';
 import { toast } from 'sonner';
 import { 
@@ -37,6 +36,7 @@ import {
 interface PriceData {
   id: string;
   price: number;
+  type: string;
   created: string;
   updated: string;
 }
@@ -47,26 +47,22 @@ export default function PricesPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    price: ''
+    price: '',
+    type: 'dogu_karadeniz'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedType, setSelectedType] = useState('all');
 
   const currentUser = getCurrentUser();
   const isAdmin = currentUser?.role === 'admin';
-  const isFactory = currentUser?.role === 'factory';
-  const canManagePrices = isAdmin || isFactory;
+  const canManagePrices = isAdmin;
 
   // Fiyat verilerini çek
   const fetchPrices = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fabrika kullanıcısı ise sadece kendi fiyatlarını getir
-      const filter = isFactory ? `factory = "${currentUser?.id}"` : '';
-      
       const records = await pb.collection('price').getList(1, 50, {
         sort: '-created',
-        filter: filter,
-        expand: 'factory',
       });
       setPrices(records.items as unknown as PriceData[]);
     } catch (error) {
@@ -75,28 +71,58 @@ export default function PricesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isFactory, currentUser?.id]);
+  }, []);
 
   useEffect(() => {
     fetchPrices();
   }, [fetchPrices]);
 
-  // Grafik için veri hazırla
-  const chartData = prices
-    .slice(0, 20) // Son 20 veri
-    .reverse()
-    .map(price => ({
-      date: new Date(price.created).toLocaleDateString('tr-TR'),
-      price: price.price,
-    }));
+  // Filtrelenmiş fiyatlar
+  const filteredPrices = selectedType === 'all' 
+    ? prices 
+    : prices.filter(price => price.type === selectedType);
+
+  // Grafik için veri hazırla - tip bazında gruplama
+  const prepareChartData = () => {
+    // Son 30 veriyi al ve tarihe göre sırala
+    const sortedPrices = prices
+      .slice(0, 30)
+      .sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
+
+    // Her tip için ayrı veri setleri oluştur
+    const doguData = sortedPrices
+      .filter(p => p.type === 'dogu_karadeniz')
+      .map(p => ({
+        date: new Date(p.created).toLocaleDateString('tr-TR'),
+        price: p.price,
+        type: 'Doğu Karadeniz'
+      }));
+
+    const batiData = sortedPrices
+      .filter(p => p.type === 'bati_karadeniz')
+      .map(p => ({
+        date: new Date(p.created).toLocaleDateString('tr-TR'),
+        price: p.price,
+        type: 'Batı Karadeniz'
+      }));
+
+    const giresunData = sortedPrices
+      .filter(p => p.type === 'giresun')
+      .map(p => ({
+        date: new Date(p.created).toLocaleDateString('tr-TR'),
+        price: p.price,
+        type: 'Giresun'
+      }));
+
+    return { doguData, batiData, giresunData };
+  };
+
+  const { doguData, batiData, giresunData } = prepareChartData();
 
   // İstatistikler
-  const latestPrice = prices[0];
-  const averagePrice = prices.length > 0 
-    ? prices.reduce((sum, price) => sum + price.price, 0) / prices.length 
-    : 0;
-  const priceChange = prices.length > 1 
-    ? ((prices[0].price - prices[1].price) / prices[1].price) * 100 
+  const latestPrice = filteredPrices[0];
+  const priceChange = filteredPrices.length > 1 
+    ? ((filteredPrices[0].price - filteredPrices[1].price) / filteredPrices[1].price) * 100 
     : 0;
 
 
@@ -107,19 +133,15 @@ export default function PricesPage() {
     setIsSubmitting(true);
     
     try {
-      const data: { price: number; factory?: string } = {
+      const data: { price: number; type: string } = {
         price: parseFloat(formData.price),
+        type: formData.type,
       };
-      
-      // Fabrika kullanıcısı ise factory alanını otomatik ekle
-      if (isFactory && currentUser?.id) {
-        data.factory = currentUser.id;
-      }
       
       await pb.collection('price').create(data);
       
       toast.success('Fiyat başarıyla eklendi');
-      setFormData({ price: '' });
+      setFormData({ price: '', type: 'dogu_karadeniz' });
       setShowForm(false);
       fetchPrices(); // Listeyi yenile
     } catch (error) {
@@ -141,22 +163,32 @@ export default function PricesPage() {
               Güncel fındık fiyatları ve trend analizi
             </p>
           </div>
-                     <div className="flex space-x-2">
-             <Button onClick={fetchPrices} variant="outline" size="sm">
-               <RefreshCw className="mr-2 h-4 w-4" />
-               Yenile
-             </Button>
-             {canManagePrices && (
-               <Button onClick={() => setShowForm(true)} size="sm">
-                 <Plus className="mr-2 h-4 w-4" />
-                 Yeni Fiyat
-               </Button>
-             )}
-           </div>
+          <div className="flex space-x-2">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Tüm Tipler</option>
+              <option value="dogu_karadeniz">Doğu Karadeniz</option>
+              <option value="bati_karadeniz">Batı Karadeniz</option>
+              <option value="giresun">Giresun</option>
+            </select>
+            <Button onClick={fetchPrices} variant="outline" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Yenile
+            </Button>
+            {canManagePrices && (
+              <Button onClick={() => setShowForm(true)} size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Yeni Fiyat
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* İstatistik Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Son Fiyat</CardTitle>
@@ -172,20 +204,6 @@ export default function PricesPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ortalama Fiyat</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₺{averagePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {prices.length} kayıt üzerinden
-              </p>
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -209,56 +227,167 @@ export default function PricesPage() {
 
         
 
-        {/* Grafik */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Fiyat Trendi</CardTitle>
-            <CardDescription>
-              Son 20 fiyat kaydının trend grafiği
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-80 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-              </div>
-            ) : chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fontSize: 12 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `₺${value.toLocaleString()}`}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [`₺${value.toLocaleString()}`, 'Fiyat']}
-                    labelFormatter={(label) => `Tarih: ${label}`}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="price"
-                    stroke="#2563eb"
-                    fill="#3b82f6"
-                    fillOpacity={0.3}
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-80 flex items-center justify-center text-gray-500">
-                Henüz fiyat verisi bulunmuyor
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Grafik - 3 Ayrı Grafik */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Doğu Karadeniz Grafiği */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                Doğu Karadeniz
+              </CardTitle>
+              <CardDescription>
+                Son {doguData.length} fiyat kaydı
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : doguData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={doguData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) => `₺${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`₺${value.toLocaleString()}`, 'Fiyat']}
+                      labelFormatter={(label) => `Tarih: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#2563eb"
+                      strokeWidth={3}
+                      dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  Doğu Karadeniz verisi bulunmuyor
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Batı Karadeniz Grafiği */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                Batı Karadeniz
+              </CardTitle>
+              <CardDescription>
+                Son {batiData.length} fiyat kaydı
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                </div>
+              ) : batiData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={batiData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) => `₺${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`₺${value.toLocaleString()}`, 'Fiyat']}
+                      labelFormatter={(label) => `Tarih: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#dc2626"
+                      strokeWidth={3}
+                      dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#dc2626', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  Batı Karadeniz verisi bulunmuyor
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Giresun Grafiği */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                Giresun
+              </CardTitle>
+              <CardDescription>
+                Son {giresunData.length} fiyat kaydı
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="h-64 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                </div>
+              ) : giresunData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={giresunData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) => `₺${value.toLocaleString()}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`₺${value.toLocaleString()}`, 'Fiyat']}
+                      labelFormatter={(label) => `Tarih: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#16a34a"
+                      strokeWidth={3}
+                      dot={{ fill: '#16a34a', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#16a34a', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  Giresun verisi bulunmuyor
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Fiyat Listesi */}
         <Card>
@@ -273,18 +402,19 @@ export default function PricesPage() {
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
-            ) : prices.length > 0 ? (
+            ) : filteredPrices.length > 0 ? (
               <Table>
                                  <TableHeader>
                    <TableRow>
                      <TableHead>Tarih</TableHead>
+                     <TableHead>Tip</TableHead>
                      <TableHead>Fiyat</TableHead>
                      <TableHead>Değişim</TableHead>
                    </TableRow>
                  </TableHeader>
                 <TableBody>
-                  {prices.slice(0, 10).map((price, index) => {
-                    const prevPrice = prices[index + 1]?.price;
+                  {filteredPrices.slice(0, 10).map((price, index) => {
+                    const prevPrice = filteredPrices[index + 1]?.price;
                     const change = prevPrice ? ((price.price - prevPrice) / prevPrice) * 100 : 0;
                     
                     return (
@@ -294,6 +424,13 @@ export default function PricesPage() {
                              <Calendar className="mr-2 h-4 w-4 text-gray-500" />
                              {new Date(price.created).toLocaleDateString('tr-TR')}
                            </div>
+                         </TableCell>
+                         <TableCell>
+                           <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                             {price.type === 'dogu_karadeniz' ? 'Doğu Karadeniz' :
+                              price.type === 'bati_karadeniz' ? 'Batı Karadeniz' :
+                              price.type === 'giresun' ? 'Giresun' : price.type}
+                           </span>
                          </TableCell>
                                                  <TableCell className="font-medium">
                            ₺{price.price.toLocaleString()}
@@ -338,6 +475,20 @@ export default function PricesPage() {
              </div>
              
                            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Fiyat Tipi
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="dogu_karadeniz">Doğu Karadeniz</option>
+                    <option value="bati_karadeniz">Batı Karadeniz</option>
+                    <option value="giresun">Giresun</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Fiyat (₺)
