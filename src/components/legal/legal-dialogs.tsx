@@ -19,7 +19,7 @@ export function TermsOfServiceDialog({ children }: { children: React.ReactNode }
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Kullanım Sözleşmesi</DialogTitle>
+          <DialogTitle>FINDIK ALIM İŞBİRLİĞİ SÖZLEŞMESİ</DialogTitle>
           <DialogDescription>
             Son güncelleme: {new Date().toLocaleDateString('tr-TR')}
           </DialogDescription>
@@ -27,96 +27,127 @@ export function TermsOfServiceDialog({ children }: { children: React.ReactNode }
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6 text-sm leading-relaxed">
             <section>
-              <h3 className="font-semibold text-base mb-3">1. Genel Hükümler</h3>
+              <h3 className="font-semibold text-base mb-3">Taraflar</h3>
               <p className="mb-3">
-                Bu kullanım sözleşmesi (&quot;Sözleşme&quot;), TRF Fındık Platformu (&quot;Platform&quot;) ile 
-                kullanıcılar arasındaki hak ve yükümlülükleri düzenler. Platformu kullanarak bu sözleşmeyi 
-                kabul etmiş sayılırsınız.
+                Bu sözleşme, bir tarafta TÜRKİYE FINDIK (bundan sonra &quot;ALICI&quot; olarak anılacaktır) ile diğer tarafta fındık üretimi yapan ÜRETİCİ (bundan sonra &quot;SATICI&quot; olarak anılacaktır) arasında aşağıdaki şartlar çerçevesinde akdedilmiştir.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-base mb-3">2. Hizmet Tanımı</h3>
+              <h3 className="font-semibold text-base mb-3">MADDE 1 – SÖZLEŞMENİN KONUSU</h3>
               <p className="mb-3">
-                Platform, fındık üreticileri ve fabrikalar arasında ticari işlemleri kolaylaştıran 
-                dijital bir ağdır. Hizmetlerimiz şunları içerir:
+                İşbu sözleşmenin konusu, SATICI tarafından yetiştirilen kabuklu veya iç fındığın, ALICI&apos;ya belirlenen alım kriterleri doğrultusunda teslim edilmesi, analiz edilmesi ve satışıyla ilgili usul ve esasların belirlenmesidir.
               </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Fındık teslimat yönetimi</li>
-                <li>Fiyat takibi ve bildirimleri</li>
-                <li>Ödeme süreçleri</li>
-                <li>İstatistik ve raporlama</li>
-                <li>QR kod tabanlı takip sistemi</li>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-base mb-3">MADDE 2 – TESLİM ŞARTLARI</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>SATICI, ürününü satılabilir ve analiz yapılabilir uygunluğa getirmekle yükümlüdür.</li>
+                <li>Fındığın kurutulmuş, yabancı maddelerden arındırılmış, çuvallanmış ve taşınabilir durumda olması zorunludur.</li>
+                <li>SATICI, ürününün nakliyesini kendi imkânlarıyla sağlayarak ALICI&apos;nın belirlediği Türkiye Fındık alım noktalarına teslim etmekle yükümlüdür.</li>
+                <li>Ürünün mülkiyeti, analiz sonrası satılabilir olduğu onaylanana kadar tamamen SATICI&apos;ya aittir.</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="font-semibold text-base mb-3">3. Kullanıcı Yükümlülükleri</h3>
-              <p className="mb-3">Kullanıcılar şu yükümlülükleri kabul eder:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Doğru ve güncel bilgi sağlama</li>
-                <li>Güvenli şifre kullanma</li>
-                <li>Platform kurallarına uygun davranma</li>
-                <li>Sahte bilgi paylaşmama</li>
-                <li>Diğer kullanıcıların haklarına saygı gösterme</li>
+              <h3 className="font-semibold text-base mb-3">MADDE 3 – ANALİZ VE KABUL KRİTERLERİ</h3>
+              <p className="mb-3">
+                ALICI, kendisine teslim edilen fındık üzerinde aşağıdaki kriterleri esas alarak analiz yapar:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Nem oranı</li>
+                <li>Çürük oranı</li>
+                <li>Yabancı madde oranı</li>
+                <li>Randıman (verim)</li>
+                <li>Zararlı böcek hasarı</li>
+                <li>Aflatoksin riski (gerekli durumlarda)</li>
+              </ul>
+              <p className="mb-3">
+                Analiz sonucunda fındığın satılabilir kalite standartlarını sağladığı tespit edilirse, ALICI ürünü teslim alır.
+              </p>
+              <p className="mb-3">
+                Aşağıdaki durumlarda ALICI ürünü kısmen veya tamamen reddetme hakkına sahiptir:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Nem oranının yüksek olması</li>
+                <li>Çürük oranının yüksek olması</li>
+                <li>Yabancı madde oranının kabul edilebilir seviyelerin üzerinde olması</li>
+                <li>Aşırı bozulma veya depolama kaynaklı kalite kaybı</li>
+                <li>Zirai ve hijyenik risk oluşturabilecek durumlar</li>
+              </ul>
+              <p className="mb-3">
+                Reddedilen ürünler, SATICI&apos;nın talebi doğrultusunda kendisine iade edilir. İade için ALICI herhangi bir taşıma yükümlülüğü üstlenmez.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-base mb-3">MADDE 4 – FİYATLANDIRMA</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Fındık alım fiyatı; analiz sonuçlarına, randımana, güncel piyasa koşullarına ve ALICI&apos;nın belirlediği fiyat politikasına göre belirlenir.</li>
+                <li>Fiyatlandırma, analiz sonrası SATICI&apos;ya yazılı veya dijital ortamda bildirilir.</li>
+                <li>SATICI, fiyatı onayladığında satış kesinleşir.</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="font-semibold text-base mb-3">4. Fabrika Onay Süreci</h3>
+              <h3 className="font-semibold text-base mb-3">MADDE 5 – ÖDEME ŞARTLARI</h3>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Satışın kesinleşmesinden sonra ALICI, SATICI&apos;nın banka hesabına ödemeyi gerçekleştirir.</li>
+                <li>Ödeme süresi aşağıdaki şekillerde olabilir:
+                  <ul className="list-disc list-inside space-y-1 ml-6 mt-2">
+                    <li>Aynı gün ödeme</li>
+                    <li>En geç … iş günü içinde ödeme (bu bölüm isteğe göre netleştirilebilir)</li>
+                  </ul>
+                </li>
+                <li>Ödemeler yalnızca SATICI&apos;nın IBAN bilgilerine yapılır; üçüncü şahıslara ödeme yapılmaz.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-base mb-3">MADDE 6 – TARAFLARIN SORUMLULUKLARI</h3>
+              <p className="mb-2 font-medium">ALICI&apos;nın Sorumlulukları:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Ürünü analiz standartlarına uygun biçimde değerlendirmek</li>
+                <li>Fiyatlandırmayı şeffaf şekilde bildirmek</li>
+                <li>Onaylanan ürünün ödemesini zamanında gerçekleştirmek</li>
+              </ul>
+              <p className="mb-2 font-medium">SATICI&apos;nın Sorumlulukları:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 mb-3">
+                <li>Ürünü analiz yapılabilir ve ticarete uygun hale getirmek</li>
+                <li>Ürünü alım noktasına bizzat teslim etmek</li>
+                <li>Ürünün kendisine ait olduğunu, üzerinde rehin, haciz veya üçüncü şahıs hakkı bulunmadığını taahhüt etmek</li>
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="font-semibold text-base mb-3">MADDE 7 – İHTİLAFLARIN ÇÖZÜMÜ</h3>
               <p className="mb-3">
-                Fabrika hesapları, gerekli belgelerin kontrol edilmesi sonrası manuel olarak onaylanır. 
-                Onay süreci 1-3 iş günü sürebilir. Onay bekleyen hesaplar platform özelliklerini 
-                kullanamaz.
+                Taraflar arasında çıkabilecek uyuşmazlıklar öncelikle uzlaşma yoluyla çözülmeye çalışılır. Çözüm sağlanamazsa, ALICI&apos;nın bulunduğu yer Mahkemeleri ve İcra Daireleri yetkilidir.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold text-base mb-3">5. Fiyat ve Ödeme</h3>
+              <h3 className="font-semibold text-base mb-3">MADDE 8 – YÜRÜRLÜK</h3>
               <p className="mb-3">
-                Platform üzerinden gösterilen fiyatlar bilgilendirme amaçlıdır. Kesin fiyatlar 
-                teslimat sırasında belirlenir. Ödeme koşulları ilgili taraflar arasında ayrıca 
-                belirlenir.
+                İşbu sözleşme … / … / 20… tarihinde iki nüsha olarak düzenlenmiş olup, taraflarca imzalandığı tarihte yürürlüğe girer.
               </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-base mb-3">6. Veri Güvenliği</h3>
-              <p className="mb-3">
-                Kişisel verileriniz 6698 sayılı KVKK kapsamında korunur. Verileriniz sadece 
-                hizmet sunumu için kullanılır ve üçüncü taraflarla paylaşılmaz.
-              </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-base mb-3">7. Sorumluluk Sınırları</h3>
-              <p className="mb-3">
-                Platform, kullanıcılar arasındaki ticari anlaşmalardan sorumlu değildir. 
-                Sadece aracı hizmet sunar. Tüm ticari riskler ilgili taraflara aittir.
-              </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-base mb-3">8. Hesap Kapatma</h3>
-              <p className="mb-3">
-                Kullanıcılar hesaplarını istediği zaman kapatabilir. Platform, sözleşme ihlali 
-                durumunda hesapları kapatma hakkını saklı tutar.
-              </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-base mb-3">9. Değişiklikler</h3>
-              <p className="mb-3">
-                Bu sözleşme önceden bildirim yapılmaksızın değiştirilebilir. Değişiklikler 
-                platform üzerinden duyurulur.
-              </p>
-            </section>
-
-            <section>
-              <h3 className="font-semibold text-base mb-3">10. İletişim</h3>
-              <p className="mb-3">
-                Sorularınız için: info@trffindik.com adresinden bize ulaşabilirsiniz.
-              </p>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="font-medium mb-2">ALICI</p>
+                  <p className="mb-1">TÜRKİYE FINDIK</p>
+                  <p className="mb-1">Ad / Soyad:</p>
+                  <p className="mb-1">İmza:</p>
+                </div>
+                <div>
+                  <p className="font-medium mb-2">SATICI (ÜRETİCİ)</p>
+                  <p className="mb-1">Ad / Soyad:</p>
+                  <p className="mb-1">TC Kimlik No:</p>
+                  <p className="mb-1">Adres:</p>
+                  <p className="mb-1">Telefon:</p>
+                  <p className="mb-1">İmza:</p>
+                </div>
+              </div>
             </section>
           </div>
         </ScrollArea>
