@@ -273,7 +273,7 @@ export default function DeliveriesPage() {
                      <TableHead>Oluşturulma</TableHead>
                      <TableHead>Teslimat Tarihi</TableHead>
                      <TableHead>Kg</TableHead>
-                     <TableHead>Fındık Türü</TableHead>
+                     <TableHead>Fındık Bölgesi</TableHead>
                      <TableHead>Fabrika</TableHead>
                      <TableHead>Fiyat</TableHead>
                      <TableHead>Toplam</TableHead>

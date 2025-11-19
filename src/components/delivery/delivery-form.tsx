@@ -164,7 +164,7 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="type">Fındık Türü</Label>
+            <Label htmlFor="type">Fındık Bölgesi</Label>
             <div className="relative">
               <Select
                 value={formData.type}
@@ -172,7 +172,7 @@ export function DeliveryForm({ isOpen, onClose, onSuccess }: DeliveryFormProps) 
                 required
               >
                 <SelectTrigger className="pl-10">
-                  <SelectValue placeholder="Fındık türü seçin" />
+                  <SelectValue placeholder="Fındık bölgesini seçin" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="dogu_karadeniz">Doğu Karadeniz</SelectItem>
