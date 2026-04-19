@@ -1,6 +1,6 @@
 import PocketBase from 'pocketbase';
 
-export const pb = new PocketBase('https://trfapi.yezuri.com');
+export const pb = new PocketBase('https://api.trfturkiyefindik.com');
 
 // Auto cancellation özelliğini tamamen devre dışı bırak
 pb.autoCancellation(false);
