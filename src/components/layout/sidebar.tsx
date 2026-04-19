@@ -220,7 +220,7 @@ export function Sidebar({ onCollapseChange }: SidebarProps) {
              isCollapsed && "justify-center"
            )}>
              <Avatar className="h-8 w-8">
-               <AvatarImage src={user?.avatar ? `https://trfapi.yezuri.com/api/files/users/${user.id}/${user.avatar}` : undefined} />
+               <AvatarImage src={user?.avatar ? `https://api.trfturkiyefindik.com/api/files/users/${user.id}/${user.avatar}` : undefined} />
                <AvatarFallback>
                  {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                </AvatarFallback>
